@@ -13,6 +13,7 @@ public enum WidthOption {
     case Fixed(CGFloat)
     case Ratio(CGFloat)
 }
+
 //SwiftUICustomSlider
 public struct SwiftUIWheelPicker<Content: View, Item>: View {
     
@@ -47,7 +48,7 @@ public struct SwiftUIWheelPicker<Content: View, Item>: View {
     public var body: some View {
         GeometryReader { geometry in
             ZStack(alignment: Alignment(horizontal: .leading, vertical: .top)) {
-                LazyHStack(spacing: 0) {
+                HStack(spacing: 0) {
                     ForEach(0..<items.wrappedValue.count, id: \.self) { position in
                         drawContentView(position, geometry: geometry)
                     }
