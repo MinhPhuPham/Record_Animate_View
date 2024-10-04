@@ -71,12 +71,12 @@ public struct MorphingCircle: View & Identifiable & Hashable {
     }
     
     public let id = UUID()
-    @State var morph: AnimatableVector = AnimatableVector.zero
-    @State var timer: Timer?
+    @State private var morph: AnimatableVector = AnimatableVector.zero
+    @State private var timer: Timer?
     
     func morphCreator() -> AnimatableVector {
         let range = Float(-morphingRange)...Float(morphingRange)
-        var morphing = Array.init(repeating: Float.zero, count: self.points)
+        var morphing = Array(repeating: Float.zero, count: self.points)
         for i in 0..<morphing.count where Int.random(in: 0...1) == 0 {
             morphing[i] = Float.random(in: range)
         }
@@ -91,47 +91,41 @@ public struct MorphingCircle: View & Identifiable & Hashable {
     let points: Int
     let secting: Double
     let size: CGFloat
-    let outerSize: CGFloat
-    var color: Color
+    var radius: CGFloat
+    var color: Color? // Changed from non-optional
+    var gradient: RadialGradient? // New optional gradient property
     let morphingRange: CGFloat
-    ///
-    let outlineColor: Color
-    let outlineWidth: Double
-    ///
-    
-    var radius: CGFloat {
-        outerSize / 2
-    }
     
     public var body: some View {
         MorphingCircleShape(morph)
-            // updated with outline
-            .fill(color, strokeBorder: outlineColor, lineWidth: outlineWidth)
+            .fill(
+                gradient != nil ?
+                AnyShapeStyle(gradient!) :
+                    AnyShapeStyle(color!)
+            )
             .frame(width: size, height: size, alignment: .center)
             .animation(Animation.easeInOut(duration: Double(duration + 1.0)), value: morph)
             .onAppear {
                 update()
-                timer = Timer.scheduledTimer(withTimeInterval: duration / secting, repeats: true) { timer in
+                timer = Timer.scheduledTimer(withTimeInterval: duration / secting, repeats: true) { _ in
                     update()
                 }
-            }.onDisappear {
+            }
+            .onDisappear {
                 timer?.invalidate()
             }
-            .frame(width: outerSize, height: outerSize, alignment: .center)
             .animation(nil, value: morph)
-        
     }
     
-    public init(size:CGFloat = 300, morphingRange: CGFloat = 30, color: Color = .red, points: Int = 4,  duration: Double = 5.0, secting: Double = 2, outlineColor: Color = .clear, outlineWidth: Double = 2) {
+    public init(size: CGFloat = 300, morphingRange: CGFloat = 30, color: Color? = .red, gradient: RadialGradient? = nil, points: Int = 4,  duration: Double = 5.0, secting: Double = 2) {
         self.points = points
         self.color = color
-        self.outlineColor = outlineColor
-        self.outlineWidth = outlineWidth
+        self.gradient = gradient
         self.morphingRange = morphingRange
         self.duration = duration
         self.secting = secting
         self.size = morphingRange * 2 < size ? size - morphingRange * 2 : 5
-        self.outerSize = size
+        self.radius = size / 2
         morph = AnimatableVector(values: [])
         update()
     }
@@ -139,12 +133,41 @@ public struct MorphingCircle: View & Identifiable & Hashable {
     func color(_ newColor: Color) -> MorphingCircle {
         var morphNew = self
         morphNew.color = newColor
+        morphNew.gradient = nil // Ensure gradient is nil if color is set
+        return morphNew
+    }
+    
+    func gradient(_ newGradient: RadialGradient) -> MorphingCircle {
+        var morphNew = self
+        morphNew.gradient = newGradient
         return morphNew
     }
 }
 
+
+
 struct MorphingCircle_Previews: PreviewProvider {
     static var previews: some View {
-        MorphingCircle(outlineColor: .orange, outlineWidth: 10.0)
+        ZStack {
+            Color.black.ignoresSafeArea(.all)
+            
+            MorphingCircle(
+                size: 180,
+                morphingRange: 10,
+                gradient: RadialGradient(colors: [.clear, Color.greenCustomColor.opacity(0.5)], center: .center, startRadius: 0, endRadius: 275),
+                points: 8,
+                duration: 0.5,
+                secting: 5
+            )
+            
+            MorphingCircle(
+                size: 170,
+                morphingRange: 16,
+                gradient: RadialGradient(colors: [.clear, Color.greenCustomColor.opacity(0.5)], center: .center, startRadius: 0, endRadius: 260),
+                points: 6,
+                duration: 0.5,
+                secting: 3
+            )
+        }
     }
 }

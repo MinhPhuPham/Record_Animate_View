@@ -48,7 +48,7 @@ struct RecordAreaButton: View {
     }
     
     private var trashIconActionView: some View {
-        ZStack(alignment: .top) {
+        Group {
             if recordControlVM.isInModeRecord() {
                 Image(systemName: "trash")
                     .font(.title2)
@@ -58,18 +58,9 @@ struct RecordAreaButton: View {
                         Circle().fill(recordControlVM.isPreparedDiscard() ? Color.red : Color.appBackgroundColorDim)
                     )
                     .background(dragDetector(for: .cancel))
-
-                Text("Release to\ncancel")
-                    .foregroundColor(.appForegroundColorDim)
-                    .fontWeight(.medium)
-                    .multilineTextAlignment(.center)
-                    .offset(x: 10, y: -45)
-                    .frame(maxWidth: 120) // Set the maximum width here
-                    .opacity(recordControlVM.isPreparedDiscard() ? 1 : 0)
-
             }
         }
-        .offset(x: -(recordButtonSize/8 + 20), y: -(recordButtonSize/8 - 20)) // 20 is item size
+        .offset(x: -(recordButtonSize/8), y: -(recordButtonSize/8 - 20)) // 20 is item size
     }
     
     var body: some View {
@@ -145,4 +136,8 @@ private struct RecordAreaButton_Content: View {
             .foregroundColor(.appBackground)
         }
     }
+}
+
+#Preview {
+    RecordAreaButton()
 }

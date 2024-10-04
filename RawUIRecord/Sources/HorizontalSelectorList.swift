@@ -50,7 +50,6 @@ struct HorizontalSelectorList: View {
             
             if recordControlVM.isNotUnsetMode() {
                 AvatarDetail(itemURL: localSelectedItem, horizontalNS: horizontalNS)
-                    .fixedSize()
             }
         }
         .frame(height: 120)
@@ -69,7 +68,15 @@ private struct AvatarDetail: View {
             width: 100
         )
         .clipShape(Circle())
-        .matchedGeometryEffect(id: itemURL, in: horizontalNS) // put before morphingShapes
-        .morphingShapes(duration: 0.3)
+//        .matchedGeometryEffect(id: itemURL, in: horizontalNS) // put before morphingShapes
+        .morphingShapes(duration: 0.4)
+    }
+}
+
+#Preview {
+    ZStack {
+//        Color.black.ignoresSafeArea(.all)
+//        
+        HorizontalSelectorList()
     }
 }
