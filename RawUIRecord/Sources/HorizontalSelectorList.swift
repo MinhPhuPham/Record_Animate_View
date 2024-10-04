@@ -41,8 +41,8 @@ struct HorizontalSelectorList: View {
                                 recordControlVM.setRecordState(.recording)
                             }
                         }
-                        .matchedGeometryEffect(id: imageURL, in: horizontalNS)
-                        .transition(.invisible)
+//                        .matchedGeometryEffect(id: imageURL, in: horizontalNS)
+//                        .transition(.invisible)
                 }
             }
             .width(.Ratio(100/ScreenHelper.width))
@@ -69,7 +69,7 @@ private struct AvatarDetail: View {
         )
         .clipShape(Circle())
 //        .matchedGeometryEffect(id: itemURL, in: horizontalNS) // put before morphingShapes
-        .morphingShapes(duration: 0.4)
+        .morphingShapes(duration: 0.8)
     }
 }
 

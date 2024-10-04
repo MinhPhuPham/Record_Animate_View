@@ -61,6 +61,50 @@ public struct MorphingCircleShape: Shape {
     }
 }
 
+private class MorphingCircleViewModel: ObservableObject {
+    @Published var morph: AnimatableVector = AnimatableVector.zero
+    private var timer: Timer?
+    private var isInitRan: Bool = false
+    
+    func morphCreator(morphingRange: CGFloat, points: Int) -> AnimatableVector {
+        let range = Float(-morphingRange)...Float(morphingRange)
+        var morphing = Array(repeating: Float.zero, count: points)
+        for i in 0..<morphing.count where Int.random(in: 0...1) == 0 {
+            morphing[i] = Float.random(in: range)
+        }
+        return AnimatableVector(values: morphing)
+    }
+    
+    func makeMorpho(morphingRange: CGFloat, points: Int) {
+        morph = morphCreator(morphingRange: morphingRange, points: points)
+    }
+    
+    func update(morphingRange: CGFloat, duration: Double, points: Int) {
+        withAnimation(Animation.easeInOut(duration: duration)) {
+            self.makeMorpho(morphingRange: morphingRange, points: points)
+        }
+    }
+    
+    func makeMorphInitView(morphingRange: CGFloat, duration: Double, secting: Double, points: Int) {
+        update(morphingRange: morphingRange, duration: 0, points: points)
+        
+        self.makeInfiniteMorph(triggerTime: 0, morphingRange: morphingRange, duration: duration, secting: secting, points: points)
+    }
+    
+    func makeInfiniteMorph(triggerTime: Double, morphingRange: CGFloat, duration: Double, secting: Double, points: Int) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + triggerTime) { [weak self] in
+            self?.update(morphingRange: morphingRange, duration: (self?.isInitRan ?? false) ? (duration + 1.0) : 0, points: points)
+            self?.makeInfiniteMorph(triggerTime: (duration / secting), morphingRange: morphingRange, duration: duration, secting: secting, points: points)
+            
+            self?.isInitRan = true
+        }
+    }
+    
+    func invalidateTimer() {
+        timer?.invalidate()
+    }
+}
+
 public struct MorphingCircle: View & Identifiable & Hashable {
     public static func == (lhs: MorphingCircle, rhs: MorphingCircle) -> Bool {
         lhs.id == rhs.id
@@ -71,21 +115,8 @@ public struct MorphingCircle: View & Identifiable & Hashable {
     }
     
     public let id = UUID()
-    @State private var morph: AnimatableVector = AnimatableVector.zero
-    @State private var timer: Timer?
-    
-    func morphCreator() -> AnimatableVector {
-        let range = Float(-morphingRange)...Float(morphingRange)
-        var morphing = Array(repeating: Float.zero, count: self.points)
-        for i in 0..<morphing.count where Int.random(in: 0...1) == 0 {
-            morphing[i] = Float.random(in: range)
-        }
-        return AnimatableVector(values: morphing)
-    }
-    
-    func update() {
-        morph = morphCreator()
-    }
+    @StateObject private var morphingCircleVM = MorphingCircleViewModel()
+    @State private var scale: CGFloat = 0.5
     
     let duration: Double
     let points: Int
@@ -97,24 +128,25 @@ public struct MorphingCircle: View & Identifiable & Hashable {
     let morphingRange: CGFloat
     
     public var body: some View {
-        MorphingCircleShape(morph)
+        MorphingCircleShape(morphingCircleVM.morph)
             .fill(
                 gradient != nil ?
                 AnyShapeStyle(gradient!) :
                     AnyShapeStyle(color!)
             )
             .frame(width: size, height: size, alignment: .center)
-            .animation(Animation.easeInOut(duration: Double(duration + 1.0)), value: morph)
+            .scaleEffect(scale)
+            .animation(.easeInOut(duration: duration), value: morphingCircleVM.morph)
             .onAppear {
-                update()
-                timer = Timer.scheduledTimer(withTimeInterval: duration / secting, repeats: true) { _ in
-                    update()
+                withAnimation(Animation.easeInOut(duration: 0.25)) {
+                    self.scale = 1.0  // Animate to full scale
                 }
+                
+                morphingCircleVM.makeMorphInitView(morphingRange: morphingRange, duration: duration, secting: secting, points: points)
             }
             .onDisappear {
-                timer?.invalidate()
+                morphingCircleVM.invalidateTimer()
             }
-            .animation(nil, value: morph)
     }
     
     public init(size: CGFloat = 300, morphingRange: CGFloat = 30, color: Color? = .red, gradient: RadialGradient? = nil, points: Int = 4,  duration: Double = 5.0, secting: Double = 2) {
@@ -126,8 +158,6 @@ public struct MorphingCircle: View & Identifiable & Hashable {
         self.secting = secting
         self.size = morphingRange * 2 < size ? size - morphingRange * 2 : 5
         self.radius = size / 2
-        morph = AnimatableVector(values: [])
-        update()
     }
     
     func color(_ newColor: Color) -> MorphingCircle {
