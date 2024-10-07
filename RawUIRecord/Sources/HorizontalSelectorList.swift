@@ -31,7 +31,7 @@ struct HorizontalSelectorList: View {
         
         ZStack {
             SwiftUIWheelPicker($selectedItem, items: $listItems) { imageURL in
-                if imageURL == localSelectedItem && recordControlVM.isRecording() {
+                if imageURL == localSelectedItem && recordControlVM.recordState.isRecording {
                     Color.clear.frame(width: 90, height: 90)
                 } else {
                     ImageView(imageURL: imageURL, ratio: 1, width: 90)
@@ -46,9 +46,9 @@ struct HorizontalSelectorList: View {
                 }
             }
             .width(.Ratio(100/ScreenHelper.width))
-            .opacity(recordControlVM.isNotUnsetMode() ? 0 : 1)
+            .opacity(recordControlVM.recordState.isNotUnsetMode ? 0 : 1)
             
-            if recordControlVM.isNotUnsetMode() {
+            if recordControlVM.recordState.isNotUnsetMode {
                 AvatarDetail(itemURL: localSelectedItem, horizontalNS: horizontalNS)
             }
         }

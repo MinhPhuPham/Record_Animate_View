@@ -1,5 +1,5 @@
 //
-//  HorizontalBarView.swift
+//  HorizontalBarIcon.swift
 //  RawUIRecord
 //
 //  Created by Phu Pham on 3/10/24.
@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct HorizontalBarView: Shape {
+struct HorizontalBarIcon: Shape {
     // Define the heights of the lines
     var heights: [CGFloat] = []
     var spacing: CGFloat = 10

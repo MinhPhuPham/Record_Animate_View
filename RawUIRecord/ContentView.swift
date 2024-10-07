@@ -28,13 +28,6 @@ extension Color {
     }
 }
 
-enum RecordingState {
-    case unset
-    case connecting
-    case recording
-    case prepareDiscard
-}
-
 private struct RecordLayoutWrapper: View {
     var body: some View {
         ZStack {
@@ -43,7 +36,7 @@ private struct RecordLayoutWrapper: View {
             VStack(spacing: 60) {
                 HorizontalSelectorList()
                 
-                RecordAreaButton()
+                RecordAreaWrapper()
             }
         }
     }
