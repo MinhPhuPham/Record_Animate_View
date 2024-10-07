@@ -61,50 +61,6 @@ public struct MorphingCircleShape: Shape {
     }
 }
 
-private class MorphingCircleViewModel: ObservableObject {
-    @Published var morph: AnimatableVector = AnimatableVector.zero
-    private var timer: Timer?
-    private var isInitRan: Bool = false
-    
-    func morphCreator(morphingRange: CGFloat, points: Int) -> AnimatableVector {
-        let range = Float(-morphingRange)...Float(morphingRange)
-        var morphing = Array(repeating: Float.zero, count: points)
-        for i in 0..<morphing.count where Int.random(in: 0...1) == 0 {
-            morphing[i] = Float.random(in: range)
-        }
-        return AnimatableVector(values: morphing)
-    }
-    
-    func makeMorpho(morphingRange: CGFloat, points: Int) {
-        morph = morphCreator(morphingRange: morphingRange, points: points)
-    }
-    
-    func update(morphingRange: CGFloat, duration: Double, points: Int) {
-        withAnimation(Animation.easeInOut(duration: duration)) {
-            self.makeMorpho(morphingRange: morphingRange, points: points)
-        }
-    }
-    
-    func makeMorphInitView(morphingRange: CGFloat, duration: Double, secting: Double, points: Int) {
-        update(morphingRange: morphingRange, duration: 0, points: points)
-        
-        self.makeInfiniteMorph(triggerTime: 0, morphingRange: morphingRange, duration: duration, secting: secting, points: points)
-    }
-    
-    func makeInfiniteMorph(triggerTime: Double, morphingRange: CGFloat, duration: Double, secting: Double, points: Int) {
-        DispatchQueue.main.asyncAfter(deadline: .now() + triggerTime) { [weak self] in
-            self?.update(morphingRange: morphingRange, duration: (self?.isInitRan ?? false) ? (duration + 1.0) : 0, points: points)
-            self?.makeInfiniteMorph(triggerTime: (duration / secting), morphingRange: morphingRange, duration: duration, secting: secting, points: points)
-            
-            self?.isInitRan = true
-        }
-    }
-    
-    func invalidateTimer() {
-        timer?.invalidate()
-    }
-}
-
 public struct MorphingCircle: View & Identifiable & Hashable {
     public static func == (lhs: MorphingCircle, rhs: MorphingCircle) -> Bool {
         lhs.id == rhs.id
@@ -115,41 +71,83 @@ public struct MorphingCircle: View & Identifiable & Hashable {
     }
     
     public let id = UUID()
-    @StateObject private var morphingCircleVM = MorphingCircleViewModel()
+    @State private var morph: AnimatableVector
+    @State private var animate: Bool
     @State private var scale: CGFloat = 0.5
+    
+    /// Generates a new AnimatableVector with random morph values
+    func morphCreator() -> AnimatableVector {
+        let range = Float(-morphingRange)...Float(morphingRange)
+        var morphing = Array(repeating: Float.zero, count: self.points)
+        for i in 0..<morphing.count where Int.random(in: 0...1) == 0 {
+            morphing[i] = Float.random(in: range)
+        }
+        return AnimatableVector(values: morphing)
+    }
+    
+    /// Updates the morph value with a smooth animation
+    func update(isInitView: Bool = false) {
+        withAnimation(.easeInOut(
+            duration: isInitView ? duration/secting : Double(duration + 1.0)
+        )) {
+            morph = morphCreator()
+        }
+    }
+    
+    func animatedUpdate() {
+        guard animate else { return }
+        
+        let durationExtend = Double(duration + 0.5)
+        
+        if #available(iOS 17.0, *) {
+            withAnimation(.easeInOut(duration: durationExtend)) {
+                self.morph = morphCreator()
+            } completion: {
+                self.animatedUpdate()
+            }
+        } else {
+            withAnimation(.easeInOut(duration: durationExtend)) {
+                self.morph = morphCreator()
+            }
+            Task.delayed(by: .seconds(duration)) { @MainActor in
+                self.animatedUpdate()
+            }
+        }
+    }
     
     let duration: Double
     let points: Int
     let secting: Double
     let size: CGFloat
     var radius: CGFloat
-    var color: Color? // Changed from non-optional
-    var gradient: RadialGradient? // New optional gradient property
+    var color: Color?
+    var gradient: RadialGradient?
     let morphingRange: CGFloat
     
     public var body: some View {
-        MorphingCircleShape(morphingCircleVM.morph)
+        MorphingCircleShape(morph)
             .fill(
                 gradient != nil ?
                 AnyShapeStyle(gradient!) :
-                    AnyShapeStyle(color!)
+                AnyShapeStyle(color!)
             )
             .frame(width: size, height: size, alignment: .center)
             .scaleEffect(scale)
-            .animation(.easeInOut(duration: duration), value: morphingCircleVM.morph)
             .onAppear {
-                withAnimation(Animation.easeInOut(duration: 0.25)) {
-                    self.scale = 1.0  // Animate to full scale
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    self.scale = 1.0
                 }
                 
-                morphingCircleVM.makeMorphInitView(morphingRange: morphingRange, duration: duration, secting: secting, points: points)
+                self.animatedUpdate()
             }
             .onDisappear {
-                morphingCircleVM.invalidateTimer()
+                animate = false
             }
     }
     
+    /// Custom initializer for MorphingCircle
     public init(size: CGFloat = 300, morphingRange: CGFloat = 30, color: Color? = .red, gradient: RadialGradient? = nil, points: Int = 4,  duration: Double = 5.0, secting: Double = 2) {
+        self.animate = true
         self.points = points
         self.color = color
         self.gradient = gradient
@@ -158,6 +156,9 @@ public struct MorphingCircle: View & Identifiable & Hashable {
         self.secting = secting
         self.size = morphingRange * 2 < size ? size - morphingRange * 2 : 5
         self.radius = size / 2
+        
+        // Initialize morph with the result of morphCreator to ensure smooth animation from start
+        _morph = State(initialValue: AnimatableVector(values: Array(repeating: Float.zero, count: points)))
     }
     
     func color(_ newColor: Color) -> MorphingCircle {
@@ -174,30 +175,45 @@ public struct MorphingCircle: View & Identifiable & Hashable {
     }
 }
 
-
-
 struct MorphingCircle_Previews: PreviewProvider {
-    static var previews: some View {
-        ZStack {
-            Color.black.ignoresSafeArea(.all)
-            
-            MorphingCircle(
-                size: 180,
-                morphingRange: 10,
-                gradient: RadialGradient(colors: [.clear, Color.greenCustomColor.opacity(0.5)], center: .center, startRadius: 0, endRadius: 275),
-                points: 8,
-                duration: 0.5,
-                secting: 5
-            )
-            
-            MorphingCircle(
-                size: 170,
-                morphingRange: 16,
-                gradient: RadialGradient(colors: [.clear, Color.greenCustomColor.opacity(0.5)], center: .center, startRadius: 0, endRadius: 260),
-                points: 6,
-                duration: 0.5,
-                secting: 3
-            )
+    struct ContainerView: View {
+        @State private var isCount: Int = 0
+        
+        var body: some View {
+            ZStack {
+                Color.black.ignoresSafeArea(.all)
+                
+                VStack(spacing: 30) {
+                    ZStack {
+                        MorphingCircle(
+                            size: 190,
+                            morphingRange: 10,
+                            color: Color.yellow.opacity(0.5),
+                            points: 7,
+                            duration: 0.5,
+                            secting: 3
+                        )
+                        
+                        MorphingCircle(
+                            size: 180,
+                            morphingRange: 16,
+                            color: Color.yellow.opacity(0.5),
+                            points: 6,
+                            duration: 0.5,
+                            secting: 4
+                        )
+                    }
+                    .id(isCount)
+                    
+                    Button(action: {isCount += 1}) {
+                        Text("Re-render show")
+                    }
+                }
+            }
         }
+    }
+    
+    static var previews: some View {
+        ContainerView()
     }
 }

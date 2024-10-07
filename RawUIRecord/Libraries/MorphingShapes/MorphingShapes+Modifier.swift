@@ -23,7 +23,7 @@ struct MorphingShapesView: ViewModifier {
                 size: size,
                 morphingRange: morphingRange,
                 gradient: RadialGradient(colors: [.clear, Color.greenCustomColor.opacity(0.5)], center: .center, startRadius: 0, endRadius: size*0.99),
-                points: 8,
+                points: 7,
                 duration: duration,
                 secting: 3
             )
@@ -34,7 +34,7 @@ struct MorphingShapesView: ViewModifier {
                 gradient: RadialGradient(colors: [.clear, Color.greenCustomColor.opacity(0.5)], center: .center, startRadius: 0, endRadius: size - 10),
                 points: 6,
                 duration: duration,
-                secting: 5
+                secting: 4
             )
             
             // Content view
@@ -49,7 +49,7 @@ extension View {
         secondColor: Color = .yellow.opacity(0.2),
         duration: Double = 0.8,
         size: CGFloat = 180,
-        morphingRange: CGFloat = 10
+        morphingRange: CGFloat = 8
     ) -> some View {
         self.modifier(MorphingShapesView(firstColor: firstColor, secondColor: secondColor, duration: duration, size: size, morphingRange: morphingRange))
     }

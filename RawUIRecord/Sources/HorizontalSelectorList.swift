@@ -69,7 +69,7 @@ private struct AvatarDetail: View {
         )
         .clipShape(Circle())
 //        .matchedGeometryEffect(id: itemURL, in: horizontalNS) // put before morphingShapes
-        .morphingShapes(duration: 0.8)
+        .morphingShapes(duration: 0.4)
     }
 }
 
