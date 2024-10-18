@@ -9,10 +9,27 @@ import SwiftUI
 
 struct ContentView: View {
     var body: some View {
-        ZStack {
-            Color.black.ignoresSafeArea(.all)
-            
-            RecordLayoutWrapper()
+        NavigationView {
+            ZStack {
+                Color.black.ignoresSafeArea(.all)
+                
+                VStack {
+                    Button(action: {}) {
+                        NavigationLink(destination: WaveFormView(), label: {
+                            Text("WaveForm View")
+                        })
+                    }
+                    .buttonStyle(PrimaryButton())
+                    
+
+                    Button(action: {}) {
+                        NavigationLink(destination: RecordLayoutWrapper(), label: {
+                            Text("Record View")
+                        })
+                    }
+                    .buttonStyle(PrimaryButton())
+                }
+            }
         }
     }
 }
@@ -27,18 +44,3 @@ extension Color {
         Color(red: 81/255, green: 77/255, blue: 81/255)
     }
 }
-
-private struct RecordLayoutWrapper: View {
-    var body: some View {
-        ZStack {
-            Color.black
-            
-            VStack(spacing: 60) {
-                HorizontalSelectorList()
-                
-                RecordAreaWrapper()
-            }
-        }
-    }
-}
-
