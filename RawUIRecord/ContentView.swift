@@ -13,7 +13,14 @@ struct ContentView: View {
             ZStack {
                 Color.black.ignoresSafeArea(.all)
                 
-                VStack {
+                VStack(spacing: 30) {
+                    Button(action: {}) {
+                        NavigationLink(destination: BottleDotsView(), label: {
+                            Text("Bottle Dots View")
+                        })
+                    }
+                    .buttonStyle(PrimaryButton())
+                    
                     Button(action: {}) {
                         NavigationLink(destination: WaveFormView(), label: {
                             Text("WaveForm View")
