@@ -13,182 +13,142 @@ struct BottleDotsView: View {
         ZStack {
             Color.appBackground.ignoresSafeArea(.all)
             
-            BubblySymbolView()
+            BubblySymbolCanvasView()
         }
     }
 }
-
-struct BottleView: View {
-    let colors: [Color] = [.red, .green, .orange]
-    let ballRadius: CGFloat = 10 // Initial ball radius
-    
-    var body: some View {
-        GeometryReader { proxy in
-            let size = proxy.size
-            let scaleFactor = size.width / 150.0 // Assuming original bottleWidth is 150 for scaling
-            let bottleWidth = size.width * 0.8 // Assuming 80% of the container width for the bottle
-            let bottleHeight = size.height * 0.9 // Assuming 90% of the container height for the bottle
-            let scaledRadius = ballRadius * 1 // Scale the radius of the balls based on size
-            
-            ZStack {
-                // Bottle Shape
-                GeometryReader { imageProxy in
-                    let imageSize = imageProxy.size // This gives you the size of the image
-                    Image("bottle")
-                        .resizable()
-                        .renderingMode(.template)
-                        .aspectRatio(contentMode: .fit)
-                        .foregroundStyle(.white)
-                        .onAppear {
-                            print("Image size: \(imageSize)")
-                        }
-                        .background(Color.blue)
-                }
-                .frame(width: size.width, height: size.height, alignment: .center)
-                
-                // Balls inside the bottle
-                let positions = placeBalls(in: CGSize(width: bottleWidth, height: bottleHeight), radius: scaledRadius)
-                ForEach(positions.indices, id: \.self) { index in
-                    Circle()
-                        .fill(colors.randomElement()!)
-                        .frame(width: scaledRadius * 2, height: scaledRadius * 2)
-                        .position(positions[index])
-                }
-            }
-            .frame(width: size.width, height: size.height, alignment: .center)
-//            .background(Color.red)
-        }
-        .frame(height: UIScreen.main.bounds.height * 0.6)
-    }
-    
-    // Algorithm to place the balls with scaling
-    func placeBalls(in size: CGSize, radius: CGFloat) -> [CGPoint] {
-        var positions: [CGPoint] = []
-        
-        let bottleLeft = radius + 10
-        let bottleRight = size.width - radius - 10
-        let bottleBottom = size.height - radius - 10
-        
-        var currentY = bottleBottom
-        
-        while currentY > radius {
-            var currentX = bottleLeft
-            
-            // Place balls in a row with slight overlap
-            while currentX < bottleRight {
-                let candidatePosition = CGPoint(x: currentX, y: currentY)
-                positions.append(candidatePosition)
-                
-                currentX += radius * 1.8 // Adjust horizontal overlap (less than 2x the radius)
-            }
-            
-            // Move up for the next row of balls with slight vertical overlap
-            currentY -= radius * 1.8 // Adjust vertical overlap (less than 2x the radius)
-        }
-        
-        return positions
-    }
-}
-
 
 struct BottleDotsView_Previews: PreviewProvider {
     static var previews: some View {
-//        GeometryReader { proxy in
-//            let proxySize = proxy.size
-//            MKSymbolShape(systemName: "bottle")
-//                .stroke(style: StrokeStyle())
-//                .aspectRatio(CGSize(width: proxySize.width / 2, height: proxySize.height), contentMode: .fit)
-//        }
-        BubblySymbolView()
+//        BubblyBottleView()
+        BubblySymbolCanvasView()
+//            .background(Color.blue)
     }
 }
 
-struct BubblySymbolView: View {
-    let colors: [Color] = [.yellow, .red, .green]
+struct BubblyBottleView: View {
+    var body: some View {
+        GeometryReader { proxy in
+            let proxySize = proxy.size
+            MKSymbolShape(systemName: "bottle")
+                .stroke(style: StrokeStyle())
+                .aspectRatio(CGSize(width: proxySize.width / 2, height: proxySize.height), contentMode: .fit)
+//                .background(Color.red)
+                .frame(width: ScreenHelper.width, height: ScreenHelper.height * 0.6, alignment: .center)
+        }
+        .frame(width: ScreenHelper.width, height: ScreenHelper.height * 0.8, alignment: .center)
+    }
+}
 
+
+struct BubblySymbolCanvasView: View {
+    let colors: [Color] = [.yellow, .red, .green]
+    let bubbleCountPerRow: Int = 7  // Number of bubbles in one row
+    
     var body: some View {
         GeometryReader { geometry in
-            ZStack {
-                if let path = generatePath(in: geometry.size, imageName: "bottle") {
-                    Path(path).stroke(Color.black, lineWidth: 2)
-                    
-                    // Draw bubbles inside path
-                    ForEach(0..<200, id: \.self) { _ in
-                        let bubble = createRandomBubble(inside: path.boundingBox, in: geometry.size)
-                        if path.contains(bubble.position) {
-                            Circle()
-                                .fill(bubble.color)
-                                .frame(width: bubble.radius * 2, height: bubble.radius * 2)
-                                .position(bubble.position)
-                        }
-                    }
+            Canvas { context, size in
+                guard let path = generatePath(in: size, imageName: "bottle") else { return }
+                
+                // Draw the path stroke for visualization
+                context.stroke(Path(path), with: .color(.black), lineWidth: 2)
+
+                // Create and draw bubbles
+                let bubbles = createGridBubbles(inside: path, numBubbles: bubbleCountPerRow)
+                for bubble in bubbles {
+                    let bubblePath = Path(ellipseIn: CGRect(x: bubble.position.x - bubble.radius,
+                                                             y: bubble.position.y - bubble.radius,
+                                                             width: bubble.radius * 2,
+                                                             height: bubble.radius * 2))
+                    context.fill(bubblePath, with: .color(bubble.color))
                 }
             }
             .frame(width: geometry.size.width, height: geometry.size.height)
         }
-        .frame(height: ScreenHelper.height * 0.8)
+        .background(Color.gray)
+        .frame(width: ScreenHelper.width * 0.6, height: ScreenHelper.height * 0.8)
     }
     
     func generatePath(in size: CGSize, imageName: String) -> CGPath? {
-        // get the symbol
-        print("Run hereee")
         guard let imgA = UIImage(named: imageName, in: nil, compatibleWith: nil)?
-            .withTintColor(.black, renderingMode: .alwaysOriginal) else {
+                .withTintColor(.black, renderingMode: .alwaysOriginal) else {
             fatalError("Could not load image: \(imageName)!")
         }
         
-        print("Run to here")
-        
-        // we want to "strip" the bounding box empty space
-        // get a cgRef from imgA
+        // Strip the bounding box empty space
         guard let cgRef = imgA.cgImage else {
             fatalError("Could not get cgImage!")
         }
-        // create imgB from the cgRef
         let imgB = UIImage(cgImage: cgRef, scale: imgA.scale, orientation: imgA.imageOrientation)
             .withTintColor(.black, renderingMode: .alwaysOriginal)
         
-        // now render it on a white background
+        // Render it on a white background
         let resultImage = UIGraphicsImageRenderer(size: imgB.size).image { ctx in
             UIColor.white.setFill()
             ctx.fill(CGRect(origin: .zero, size: imgB.size))
             imgB.draw(at: .zero)
         }
-        print("cgPath Run to hereeee")
+        
         guard let cgPath = detectVisionContours(from: resultImage) else { return nil }
-        print("cgPath", cgPath)
-        return cgPath
+        let insetAmount: CGFloat = 0
+        let scW: CGFloat = (size.width - CGFloat(insetAmount)) / cgPath.boundingBox.width
+        let scH: CGFloat = (size.height - CGFloat(insetAmount)) / cgPath.boundingBox.height
+        
+        // we need to invert the Y-coordinate space
+        var transform = CGAffineTransform.identity
+            .scaledBy(x: scW, y: -scH)
+            .translatedBy(x: 0.0, y: -cgPath.boundingBox.height)
+        
+        return cgPath.copy(using: &transform)
     }
     
-    func detectVisionContours(from sourceImage: UIImage?) -> CGPath? {
-        guard let sourceImage = sourceImage,
-              let cgImage = sourceImage.cgImage else { return nil }
+    func detectVisionContours(from sourceImage: UIImage) -> CGPath? {
+        guard let cgImage = sourceImage.cgImage else {
+            print("Could not get cgImage from UIImage")
+            return nil
+        }
         
         let inputImage = CIImage(cgImage: cgImage)
         let contourRequest = VNDetectContoursRequest()
         contourRequest.revision = VNDetectContourRequestRevision1
         contourRequest.contrastAdjustment = 1.0
         contourRequest.maximumImageDimension = 512
-        
+
         let requestHandler = VNImageRequestHandler(ciImage: inputImage, options: [:])
-        try? requestHandler.perform([contourRequest])
-        if let contoursObservation = contourRequest.results?.first {
-            return contoursObservation.normalizedPath
+        do {
+            try requestHandler.perform([contourRequest])
+            if let contoursObservation = contourRequest.results?.first {
+                return contoursObservation.normalizedPath
+            }
+        } catch {
+            print("Vision error: \(error.localizedDescription)")
         }
         
         return nil
     }
-    
-    func createRandomBubble(inside rect: CGRect, in size: CGSize) -> (position: CGPoint, radius: CGFloat, color: Color) {
-        print("rect", rect)
-        let radius = CGFloat.random(in: 5...15)
-        let x = CGFloat.random(in: rect.minX...rect.maxX)
-        let y = CGFloat.random(in: rect.minY...rect.maxY)
-        let position = CGPoint(x: x, y: y)
-        let color = colors.randomElement() ?? .yellow
-        return (position, radius, color)
+
+    func createGridBubbles(inside path: CGPath, numBubbles: Int) -> [(position: CGPoint, radius: CGFloat, color: Color)] {
+        let pathRect = path.boundingBox
+        var bubbles: [(CGPoint, CGFloat, Color)] = []
+
+        let bubbleDiameter = min(pathRect.width, pathRect.height) / CGFloat(numBubbles)
+        let bubbleRadius = bubbleDiameter / 2
+
+        for yIndex in 0..<numBubbles {
+            for xIndex in 0..<numBubbles {
+                let position = CGPoint(x: pathRect.minX + CGFloat(xIndex) * bubbleDiameter + bubbleRadius,
+                                       y: pathRect.minY + CGFloat(yIndex) * bubbleDiameter + bubbleRadius)
+
+                if path.contains(position) {
+                    let color = colors.randomElement() ?? .yellow
+                    bubbles.append((position, bubbleRadius, color))
+                }
+            }
+        }
+        return bubbles
     }
 }
+
 
 struct MKSymbolShape: InsettableShape {
     var insetAmount = 0.0
@@ -236,7 +196,7 @@ struct MKSymbolShape: InsettableShape {
         
         // Draw the "bubbles" with allowed overlaps and random colors
         let boundingBox = imagePath.boundingBox.insetBy(dx: 5, dy: 5) // Inset 5px for margin
-        
+        print("boundingBox", boundingBox)
         return path
     }
 
