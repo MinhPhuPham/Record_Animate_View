@@ -15,7 +15,7 @@ struct WaveFormView: View {
     
     func doStartAnimationWave() {
         withAnimation(Animation.linear(duration: 1).repeatForever(autoreverses: false)) {
-        self.waveOffset = Angle(degrees: 360)
+            self.waveOffset = Angle(degrees: 360)
         }
     }
     
@@ -66,52 +66,50 @@ struct WaveFormView: View {
                             .fill(Color(red: 146/255, green: 192/255, blue: 1))
                         }
                         // Water Drops
-                            .overlay(
-                                BubbleEffectView(replay: .constant(true))
-                                    .frame(height: size.height * (percent - waveRollRatio)),
-                                alignment: .bottom
-                            )
-                            .overlay(
-                                VStack {
-                                    Text("\(percent*100, specifier: "%.0f")%")
-                                        .foregroundStyle(.appForeground)
-                                        .font(Font.system(size: 30, weight: .black))
-                                }
-                                .frame(height: size.height * (percent - waveRollRatio))
+                        .overlay(
+                            BubbleEffectView(replay: .constant(true))
+                                .frame(height: size.height * (percent - waveRollRatio)),
+                            alignment: .bottom
+                        )
+                        // Water Percentage
+                        .overlay(
+                            Text("\(percent*100, specifier: "%.0f")%")
+                                .foregroundStyle(.appForeground)
+                                .font(Font.system(size: 30, weight: .black))
+                                .offset(y: -((size.height / 2) * (percent - waveRollRatio)))
                                 .animation(.easeInOut, value: percent),
-                                alignment: .bottom
-                            )
+                            alignment: .bottom
+                        )
                         // Masking into Drop Shape
-                            .mask {
-                                
-                                Image("bottle")
-                                    .resizable()
-                                    .renderingMode(.template)
-                                    .aspectRatio(contentMode: .fit)
-                                    .scaleEffect(0.98)
-                            }
+                        .mask {
+                            
+                            Image("bottle")
+                                .resizable()
+                                .renderingMode(.template)
+                                .aspectRatio(contentMode: .fit)
+                                .scaleEffect(0.98)
+                        }
                         // Add Button
-                            .overlay(alignment: .bottom){
-                                
-                                Button {
-                                    withAnimation {
-                                        percent += 0.05
-                                    }
-                                    
-                                    DispatchQueue.main.async {
-                                        self.waveOffset = Angle(degrees: 0)
-                                        doStartAnimationWave()
-                                    }
-                                } label: {
-                                    Image(systemName: "plus")
-                                        .font(.system(size: 32, weight: .black))
-                                        .foregroundColor(Color.blue)
-                                        .shadow(radius: 2)
-                                        .padding(25)
-                                        .background(.white,in: Circle())
+                        .overlay(alignment: .bottom){
+                            Button {
+                                withAnimation {
+                                    percent += 0.05
                                 }
-                                .offset(y: 80)
+                                
+                                DispatchQueue.main.async {
+                                    self.waveOffset = Angle(degrees: 0)
+                                    doStartAnimationWave()
+                                }
+                            } label: {
+                                Image(systemName: "plus")
+                                    .font(.system(size: 32, weight: .black))
+                                    .foregroundColor(Color.blue)
+                                    .shadow(radius: 2)
+                                    .padding(25)
+                                    .background(.white,in: Circle())
                             }
+                            .offset(y: 80)
+                        }
                     }
                     .frame(width: size.width, height: size.height, alignment: .center)
                     .onAppear {
@@ -123,7 +121,7 @@ struct WaveFormView: View {
                 Spacer()
                 
                 Slider(value: $percent)
-                    
+                
             }
         }
     }
