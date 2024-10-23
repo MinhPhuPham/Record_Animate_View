@@ -9,59 +9,77 @@ import SwiftUI
 
 struct BubbleEffectView: View {
     @StateObject var viewModel: BubbleEffectViewModel = BubbleEffectViewModel()
-    @Binding var replay: Bool
+    
     var body: some View {
-        GeometryReader{ geo in
-            ZStack{
-                //Show bubble views for each bubble
-                ForEach(viewModel.bubbles){bubble in
-                    BubbleView(bubble: bubble)
-                }
-            }.onChange(of: replay, perform: { _ in
-                viewModel.addBubbles(frameSize: geo.size)
-            })
-            
-            .onAppear(){
-                //Set the initial position from frame size
-                viewModel.viewBottom = geo.size.height
-                viewModel.addBubbles(frameSize: geo.size)
+        ZStack{
+            // Show bubble views for each bubble
+            ForEach(viewModel.bubbles) { bubble in
+                BubbleView(bubble: bubble)
             }
+        }
+        .background(
+            GeometryReader { geo in
+                Color.clear
+                    .onAppear {
+                        // Set the initial position from frame size
+                        viewModel.addBubbles()
+                    }
+                    .onChange(of: geo.size) { newSize in
+                        viewModel.onFrameSizeChange(newSize)
+                    }
+            }
+        )
+        .onDisappear {
+            viewModel.clearTimer()
         }
     }
 }
-
-class BubbleEffectViewModel: ObservableObject{
-    @Published var viewBottom: CGFloat = CGFloat.zero
+class BubbleEffectViewModel: ObservableObject {
     @Published var bubbles: [BubbleViewModel] = []
+    private var frameSize: CGSize = .zero
     private var timer: Timer?
     private var timerCount: Int = 0
-    @Published var bubbleCount: Int = 50
+    private var bubbleCount: Int = 10
+    private var waveRollsHeight: CGFloat = 20
+    private let lifetimeRange: (min: Double, max: Double) = (min: 1.5, max: 2.0)
     
-    func addBubbles(frameSize: CGSize){
-        let lifetime: TimeInterval = 2
-        //Start timer
-        timerCount = 0
+    func onFrameSizeChange(_ size: CGSize){
+        if self.frameSize != size {
+            self.frameSize = size
+            self.addBubbles()
+        }
+    }
+    
+    func addBubbles(){
         if timer != nil{
             timer?.invalidate()
         }
-        timer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { (timer) in
-            let bubble = BubbleViewModel(height: 10, width: 10, x: frameSize.width/2, y: self.viewBottom, color: .white, lifetime: lifetime)
+        timer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) {[weak self] (timer) in
+            guard let self = self else {
+                self?.clearTimer()
+                return
+            }
+            
+            let yRoadHeight: CGFloat = max(0, self.frameSize.height - waveRollsHeight)
+            let randomX: CGFloat = .random(in: (self.frameSize.width * 1/3)...(self.frameSize.width * 2/3))
+            let randomLifeTime: TimeInterval = .random(in: self.lifetimeRange.min...self.lifetimeRange.max)
+            let bubble = BubbleViewModel(height: 10, width: 10, x: randomX, y: yRoadHeight, color: .white, lifetime: randomLifeTime)
+            
             //Add to array
             self.bubbles.append(bubble)
+            
             //Get rid if the bubble at the end of its lifetime
-            Timer.scheduledTimer(withTimeInterval: bubble.lifetime, repeats: false, block: {_ in
-                self.bubbles.removeAll(where: {
+            Timer.scheduledTimer(withTimeInterval: bubble.lifetime, repeats: false, block: {[weak self] _ in
+                self?.bubbles.removeAll(where: {
                     $0.id == bubble.id
                 })
             })
-            if self.timerCount >= self.bubbleCount {
-                //Stop when the bubbles will get cut off by screen
-                timer.invalidate()
-                self.timer = nil
-            }else{
-                self.timerCount += 1
-            }
         }
+    }
+    
+    func clearTimer() {
+        timer?.invalidate()
+        timer = nil
     }
 }
 
@@ -81,7 +99,7 @@ struct BubbleView: View {
                     //Go up
                     self.bubble.y = -bubble.height
                     //Go sideways
-                    self.bubble.x += bubble.xFinalValue()
+//                    self.bubble.x += bubble.xFinalValue()
                     //Change size
                     let width = bubble.yFinalValue()
                     self.bubble.width = width
@@ -106,6 +124,7 @@ class BubbleViewModel: Identifiable, ObservableObject{
     @Published var width: CGFloat
     @Published var height: CGFloat
     @Published var lifetime: TimeInterval = 0
+    
     init(height: CGFloat, width: CGFloat, x: CGFloat, y: CGFloat, color: Color, lifetime: TimeInterval){
         self.height = height
         self.width = width
@@ -114,11 +133,12 @@ class BubbleViewModel: Identifiable, ObservableObject{
         self.y = y
         self.lifetime = lifetime
     }
+    
     func xFinalValue() -> CGFloat {
-        return CGFloat.random(in:-width*CGFloat(lifetime*2.5)...width*CGFloat(lifetime*2.5))
-    }
-    func yFinalValue() -> CGFloat {
-        return CGFloat.random(in:0...width*CGFloat(lifetime*2.5))
+        return CGFloat.random(in:-width*CGFloat(lifetime*1.5)...width*CGFloat(lifetime*1.5))
     }
     
+    func yFinalValue() -> CGFloat {
+        return CGFloat.random(in:0...width*CGFloat(lifetime*1.5))
+    }
 }
