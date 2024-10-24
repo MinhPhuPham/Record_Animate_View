@@ -41,7 +41,7 @@ class BubbleEffectViewModel: ObservableObject {
     private var timerCount: Int = 0
     private var bubbleCount: Int = 10
     private var waveRollsHeight: CGFloat = 20
-    private let lifetimeRange: (min: Double, max: Double) = (min: 1.5, max: 2.0)
+    private let lifetimeRange: (min: Double, max: Double) = (min: 1.6, max: 2.2)
     
     func onFrameSizeChange(_ size: CGSize){
         if self.frameSize != size {

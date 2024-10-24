@@ -88,8 +88,12 @@ private struct WaveLayerView: View {
     @State private var waveOffset = Angle(degrees: 0)
     
     private func startWaveAnimation() {
-        withAnimation(.linear(duration: 1.0).repeatForever(autoreverses: false)) {
-            self.waveOffset = Angle(degrees: 360)
+        // need to delay state change a bit (until first layout/render finished)
+        // this avoid effect to parent view
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+            withAnimation(.linear(duration: 1.0).repeatForever(autoreverses: false)) {
+                self.waveOffset = Angle(degrees: 360)
+            }
         }
     }
     
