@@ -37,3 +37,34 @@ struct ImageView: View {
         .frame(width: width, height: CGFloat(Int(ratio * width)))
     }
 }
+
+struct RadiusConstants {
+    static let CornerRadiusSM: CGFloat = 8
+    static let CornerRadiusMD: CGFloat = 10
+    static let CornerRadiusLG: CGFloat = 20
+}
+
+struct InAppImageView: View {
+    var name: String
+    var contentMode: ContentMode = .fit
+
+    var body: some View {
+        Image(name)
+            .resizable()
+            .aspectRatio(contentMode: contentMode)
+    }
+}
+
+extension View {
+    var radiusShapeSM: some View {
+        self.clipShape(RoundedRectangle(cornerRadius: RadiusConstants.CornerRadiusSM, style: .continuous))
+    }
+    
+    var radiusShapeMD: some View {
+        self.clipShape(RoundedRectangle(cornerRadius: RadiusConstants.CornerRadiusMD, style: .continuous))
+    }
+    
+    var radiusShapeLG: some View {
+        self.clipShape(RoundedRectangle(cornerRadius: RadiusConstants.CornerRadiusLG, style: .continuous))
+    }
+}

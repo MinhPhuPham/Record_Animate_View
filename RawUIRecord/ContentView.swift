@@ -15,6 +15,13 @@ struct ContentView: View {
                 
                 VStack {
                     Button(action: {}) {
+                        NavigationLink(destination: CarouselTourGuide(), label: {
+                            Text("Carousel Tour Guide")
+                        })
+                    }
+                    .buttonStyle(PrimaryButton())
+                    
+                    Button(action: {}) {
                         NavigationLink(destination: WaveFormView(), label: {
                             Text("WaveForm View")
                         })
