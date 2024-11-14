@@ -7,14 +7,6 @@
 
 import SwiftUI
 
-struct SnapCarouselPageIndicatorConfig {
-    var normalSize: CGFloat = 8
-    var selectedSize: CGFloat = 22
-    var dotColor: Color = .gray
-    
-    var pageIndicatorOffsetY: CGFloat = 20
-}
-
 struct SnapCarouselPageIndicatorView: View {
     @Binding var selectedIndex: Int
     

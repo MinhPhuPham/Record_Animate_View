@@ -9,54 +9,55 @@ import SwiftUI
 
 struct SnapCarouselToggleAutoScroll: View {
     @Binding var autoScrollState: SnapCarouselAutoScrollState
+    var controllOffsetY: CGFloat
+    
     @State private var isButtonVisible: Bool = false
+    private let animationDuration: TimeInterval = 0.6
     
     var onClickIcon: () -> Void
     
-    private let animationDuration: TimeInterval = 0.8
-    
     var displayImageIcon: String {
         switch autoScrollState {
-        case .active:
-            "pause.fill"
-        case .temporaryDeactive:
-            "play.fill"
-        case .resetOneTime:
-            "arrow.trianglehead.counterclockwise"
-        case .unset:
-            ""
+        case .active: return "pause.fill"
+        case .temporaryDeactive: return "play.fill"
+        case .resetOneTime: return "arrow.counterclockwise"
+        case .unset: return ""
         }
     }
     
     var body: some View {
-        VStack {
-            if isButtonVisible {
+        VStack(spacing: 0) {
+            if isButtonVisible && autoScrollState != .unset {
                 Button(action: onClickIcon) {
                     Image(systemName: displayImageIcon)
                         .resizable()
-                        .foregroundColor(Color.black)
+                        .aspectRatio(contentMode: .fit)
                         .frame(width: 40, height: 40)
-                        .padding(20)  // Extra padding to make the circle larger
-                        .background(
-                            Circle()
-                                .fill(Color.gray.opacity(0.2)) // Adjust color and opacity as needed
-                        )
+                        .foregroundColor(Color.black)
+                        .padding(20)  // Extra padding to increase the clickable area
+                        .background(Circle().fill(Color.gray.opacity(0.2)))
                 }
                 .transition(.opacity)
             }
         }
-        .onChange(of: autoScrollState) { newValue in
-            print("newValue", newValue)
-            toggleButtonVisibility()
-        }
+        .offset(y: controllOffsetY)
+        .onChange(of: autoScrollState, perform: toggleButtonVisibility)
     }
     
-    private func toggleButtonVisibility() {
+    private func toggleButtonVisibility(_ scrollState: SnapCarouselAutoScrollState) {
+        // If state is unset and button is visible, hide the button
+        guard !(scrollState == .unset && isButtonVisible) else {
+            isButtonVisible = false
+            return
+        }
+        
+        // Animate the button to become visible
         withAnimation(.easeInOut(duration: animationDuration)) {
             isButtonVisible = true
         }
         
-        if autoScrollState == .resetOneTime { return }
+        // If state is resetOneTime then keep the button visible
+        guard scrollState != .resetOneTime else { return }
         
         // After showing the button, set it to hide after a delay
         DispatchQueue.main.asyncAfter(deadline: .now() + animationDuration) {
@@ -66,3 +67,4 @@ struct SnapCarouselToggleAutoScroll: View {
         }
     }
 }
+

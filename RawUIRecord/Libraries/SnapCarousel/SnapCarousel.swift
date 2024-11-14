@@ -13,7 +13,7 @@ public struct SnapCarousel<Data, ID, Content>: View where Data: RandomAccessColl
     private let content: (Data.Element) -> Content
     
     public var body: some View {
-        ZStack(alignment: .bottom) {
+        ZStack(alignment: viewModel.pageIndicatorConfig.placement) {
             GeometryReader { proxy -> AnyView in
                 viewModel.viewSize = proxy.size
                 return AnyView(generateContent(proxy: proxy))
@@ -45,6 +45,7 @@ public struct SnapCarousel<Data, ID, Content>: View where Data: RandomAccessColl
         .overlay(
             SnapCarouselToggleAutoScroll(
                 autoScrollState: Binding<SnapCarouselAutoScrollState>(get: { viewModel.autoScrollCarouselState }, set: {_ in}),
+                controllOffsetY: viewModel.controlButtonOffetY,
                 onClickIcon: viewModel.handleAutoScrollState
             )
         )

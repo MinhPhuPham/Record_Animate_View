@@ -26,7 +26,18 @@ struct SnapCarouselConfigure {
     ///
     var animationDuration: TimeInterval = 0.8
     
+    var playControlOffetY: CGFloat = 0
+    
     var pageIndicatorConfig: SnapCarouselPageIndicatorConfig = .init()
+}
+
+struct SnapCarouselPageIndicatorConfig {
+    var normalSize: CGFloat = 8
+    var selectedSize: CGFloat = 22
+    var dotColor: Color = .gray
+    
+    var placement: Alignment = .bottom
+    var pageIndicatorOffsetY: CGFloat = 20
 }
 
 enum SnapCarouselAutoScrollState {

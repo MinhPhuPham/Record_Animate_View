@@ -151,6 +151,10 @@ extension SnapCarouselViewModel {
         return _config.spacing
     }
     
+    var controlButtonOffetY: CGFloat {
+        return _config.playControlOffetY
+    }
+    
     var offsetAnimation: Animation? {
         guard isWrap else {
             return .spring(duration: _config.animationDuration)
@@ -280,6 +284,11 @@ extension SnapCarouselViewModel {
             offset = max(-offset, value.translation.width)
         }
         
+        /// check if have reset icon => remove it
+        if _config.autoScroll.isActiveOneTime && autoScrollCarouselState == .resetOneTime {
+            setCarouselState(.unset)
+        }
+        
         /// set drag offset
         dragOffset = offset
         
@@ -338,7 +347,6 @@ extension SnapCarouselViewModel {
                 setTimerActive(false)
                 setCarouselState(.resetOneTime)
                 
-                print("Run to here")
                 return
             }
             
