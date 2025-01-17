@@ -15,7 +15,8 @@ class SlotMachineAutoScrollView: UIViewController {
     var configure: SlotMachineCongfigure = .init()
     
     var itemHeight: CGFloat {
-        collectionView.frame.height / CGFloat(configure.visibleItemsCount)
+        print("collectionView.frame", collectionView.frame.size)
+        return collectionView.frame.height / CGFloat(configure.visibleItemsCount)
     }
     
     // Winning item if need

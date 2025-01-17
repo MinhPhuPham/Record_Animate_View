@@ -8,10 +8,21 @@
 import SwiftUI
 
 struct SlotGameMachineColumns: View {
+    @Environment(\.layoutPositionConfig) var layoutPositionConfig
+    var proxyReader: GeometryProxy
+    
     var body: some View {
-        HStack {
+        Group {
             ForEach(0..<3, id: \.self) { index in
-                SlotGameColumn(index: index)
+                SlotGameColumn(
+                    index: index,
+                    proxyReader: proxyReader,
+                    columnConfig: layoutPositionConfig.columnsConfigs[index]
+                )
+                .onAppear {
+                    print("layoutPositionConfig.columnsConfigs[index]", layoutPositionConfig.columnsConfigs[index],
+                          layoutPositionConfig.columnsConfigs[index].xRatio, layoutPositionConfig.columnsConfigs[index].yRatio)
+                }
             }
         }
     }
@@ -19,6 +30,8 @@ struct SlotGameMachineColumns: View {
 
 private struct SlotGameColumn: View {
     let index: Int
+    var proxyReader: GeometryProxy
+    let columnConfig: SlotMachineElementPositionModel
     
     var body: some View {
         SlotColumnInfiniteUIScrollView(
@@ -27,7 +40,19 @@ private struct SlotGameColumn: View {
                 scrollSpeed: 30.0
             )
         )
-        .frame(width: 80, height: 140)
+        .frame(
+            width: proxyReader.size.width * columnConfig.widthRatioWithParent,
+            height: proxyReader.size.height * columnConfig.heightRatioWithParent,
+            alignment: .center
+        )
+        .offset(
+            x: proxyReader.size.width * columnConfig.xRatio,
+            y: proxyReader.size.height * columnConfig.yRatio
+        )
+        .background(Color.yellow.opacity(0.3))
+        .onAppear {
+            print("ValueY", proxyReader.size.height * columnConfig.yRatio)
+        }
     }
 }
 
