@@ -92,7 +92,7 @@ extension SlotMachineAutoScrollView {
     }
     
     func stopScrollImmediately() {
-        print("stopScrollImmediately winningState \(winningState)")
+        if !isRolling { return }
         
         onStopedScroll()
         
@@ -125,13 +125,16 @@ extension SlotMachineAutoScrollView {
         let centerIndex = Int(midContentOffset / itemHeight) % models.count
         
         let indexToScroll: Int
-        if winningState.isInWinMode, let winningIndex = winningState.firstSelectedIndex {
+        if winningState.isWinning, let winningIndex = winningState.firstSelectedIndex {
             indexToScroll = winningIndex
         } else {
             indexToScroll = centerIndex
         }
 
-        let adjustedIndex = indexToScroll == centerIndex ? centerIndex + 1 : indexToScroll
+        let isNotWinningAndSameIndex = !winningState.isWinning && indexToScroll == centerIndex
+        let adjustedIndex = isNotWinningAndSameIndex ? centerIndex + 1 : indexToScroll
+        
+        print("onScrollStopedAt adjustedIndex", adjustedIndex)
         
         onScrollStopedAt?(adjustedIndex)
         scrollToItem(at: adjustedIndex)
@@ -142,12 +145,16 @@ extension SlotMachineAutoScrollView {
         // Calculate the desired content offset for centering the item
         let newOffsetY = CGFloat(index) * itemHeight
         
-        print("Scrolling to index: \(index), offset: \(newOffsetY) winningState \(winningState)")
+         print("Scrolling to index: \(index), offset: \(newOffsetY) winningState \(winningState)")
         
-        // Using animation block or no animation according to requirement
-        UIView.animate(withDuration: 0.1) {
-            self.collectionView.contentOffset.y = newOffsetY
-        }
+        self.collectionView.contentOffset.y = newOffsetY
+        
+//        self.collectionView.layer.removeAllAnimations()
+//        
+//        // Using animation block or no animation according to requirement
+//        UIView.animate(withDuration: 0.1) {
+//            self.collectionView.contentOffset.y = newOffsetY
+//        }
     }
 }
 

@@ -9,10 +9,16 @@ import SwiftUI
 
 enum ESlotMachineState {
     case unset
-    case spining
+    case playingStarting
+    case playing
+    case playingEnding
     case played
     
-    var isSpining: Bool {
-        self == .spining
+    var isPlaying: Bool {
+        self == .playing
+    }
+    
+    var isBlockingSpinBtn: Bool {
+        self == .playingEnding || self == .playingStarting
     }
 }

@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct SlotGameView: View {
+    let slotGameConfigure: SlotGameConfigModel = .init()
+    
     var body: some View {
         ZStack {
             SlotGameBackgroundView()
@@ -16,7 +18,7 @@ struct SlotGameView: View {
                 SlotGameLogoView()
 
                 // Slot Machine
-                SlotGameMachineView()
+                SlotGameMachineView(slotGamePlayConfig: slotGameConfigure.gamePlayConfigure)
                 
                 Spacer()
             }

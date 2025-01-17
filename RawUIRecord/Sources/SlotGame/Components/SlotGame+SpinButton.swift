@@ -14,15 +14,19 @@ struct SlotGameSpinButton: View {
         switch slotGameVM.spiningState {
         case .unset:
             "Spin"
-        case .spining:
+        case .playingStarting:
+            "Starting..."
+        case .playing:
             "Stop all"
+        case .playingEnding:
+            "Ending..."
         case .played:
             "↪ Play again"
         }
     }
     
     var body: some View {
-        VStack(spacing: 24) {
+        VStack(spacing: 45) {
             HStack {
                 ForEach(0..<3, id: \.self) { index in
                     SlotGameStopButton(index: index, onStopClick: { [weak slotGameVM] in
@@ -30,8 +34,8 @@ struct SlotGameSpinButton: View {
                     })
                 }
             }
-            .disabled(!slotGameVM.spiningState.isSpining)
-            .opacity(slotGameVM.spiningState.isSpining ? 1 : 0.6)
+            .disabled(!slotGameVM.spiningState.isPlaying)
+            .opacity(slotGameVM.spiningState.isPlaying ? 1 : 0.6)
             
             Button(action: slotGameVM.clickSpinButton) {
                 Text(spningText)
@@ -44,7 +48,9 @@ struct SlotGameSpinButton: View {
                 RoundedRectangle(cornerRadius: 10)
                     .stroke(Color.green, lineWidth: 3) // green outline with width of 3
             )
+            .disabled(slotGameVM.spiningState.isBlockingSpinBtn)
         }
+        .padding(.top, 10)
     }
 }
 

@@ -18,6 +18,12 @@ struct SlotGameWinningState {
 }
 
 class SlotGameViewModel: ObservableObject {
+    var configure: GamePlayConfigModel
+    
+    init(configure: GamePlayConfigModel) {
+        self.configure = configure
+    }
+    
     // An array to hold references to each column's scrolling state
     var references: [ContinuousInfiniteReference<SlotMachineAutoScrollView>] = [
         ContinuousInfiniteReference<SlotMachineAutoScrollView>(),
@@ -58,15 +64,12 @@ class SlotGameViewModel: ObservableObject {
 // callback function
 extension SlotGameViewModel {
     func onScrollStopedAt(_ index: Int?) {
-        print("Run to onScrollStopedAt", winningState, index)
+        guard winningState.firstSelectedIndex == nil else { return }
         
-        if winningState.firstSelectedIndex != nil {
-            return
-        }
+        print("Run to onScrollStopedAt parent: \(index ?? -1)")
         
-        self.setWinningIndex(index)
-        
-        self.setWinningStateForAllChild(winningState)
+        setWinningIndex(index)
+        setWinningStateForAllChild(winningState)
     }
     
     private func setWinningStateForAllChild(_ winningState: SlotGameWinningState) {
@@ -80,22 +83,28 @@ extension SlotGameViewModel {
 extension SlotGameViewModel {
     // Start scrolling all columns
     func startScrolling() {
-        setSpiningState(.spining)
+        setSpiningState(.playingStarting)
         
         for (index, reference) in references.enumerated() {
-            let delay = Double(index) * 0.2  // 0.2s delay for each additional column
-            DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak reference] in
-                reference?.object?.startAutomaticScroll()
+            let delay = Double(index) * configure.delayBetweenStartAll
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self, weak ref = reference] in
+                ref?.object?.startAutomaticScroll()
+                
+                self?.checkStartedSpningForAll()
             }
         }
     }
     
     // Stop scrolling all columns
     func stopAllScrolling() {
+        setSpiningState(.playingEnding)
+        
         for (index, reference) in referencesIsSpining.enumerated() {
-            let delay = Double(index) * 0.2  // 0.2s delay for each additional column
-            DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self, weak reference] in
-                reference?.object?.stopScrollImmediately()
+            let delay = Double(index) * configure.delayBetweenStopAll
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self, weak ref = reference] in
+                ref?.object?.stopScrollImmediately()
                 
                 self?.setFinishedGameIfFinishAll()
             }
@@ -112,12 +121,18 @@ extension SlotGameViewModel {
         musicPlayer[.spinSound]?.playSound()
         
         switch spiningState {
-        case .unset:
+        case .unset, .played:
             startScrolling()
-        case .spining:
+        case .playing:
             stopAllScrolling()
-        case .played:
-            startScrolling()
+        case .playingEnding, .playingStarting:
+            break
+        }
+    }
+    
+    private func checkStartedSpningForAll() {
+        if referencesIsSpining.count == references.count {
+            setSpiningState(.playing)
         }
     }
     
@@ -128,11 +143,8 @@ extension SlotGameViewModel {
     }
     
     private func setFinishGameActions() {
-        print("Run to setFinishGameActions")
-        setSpiningState(.played)
         setWinningIndex(nil)
-        
-        setWinningStateForAllChild(winningState)
+        setSpiningState(.played)
         
         if winningState.isWinning {
             musicPlayer[.winSound]?.playSound()

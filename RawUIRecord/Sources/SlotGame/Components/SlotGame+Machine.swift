@@ -8,7 +8,11 @@
 import SwiftUI
 
 struct SlotGameMachineView: View {
-    @StateObject private var slotGameVM = SlotGameViewModel()
+    @StateObject private var slotGameVM: SlotGameViewModel
+    
+    init(slotGamePlayConfig: GamePlayConfigModel) {
+        self._slotGameVM = StateObject(wrappedValue: SlotGameViewModel(configure: slotGamePlayConfig))
+    }
     
     private func viewDidLoad() {
         DispatchQueue.main.async { [weak slotGameVM] in
@@ -34,13 +38,18 @@ struct SlotGameMachineView: View {
 private struct SlotGameMachineElement: View {
     var body: some View {
         ZStack {
-//            Image("slot_machine")
-//                .resizable()
-//                .scaledToFit()
-//                .frame(maxWidth: ScreenHelper.width * 0.9, maxHeight: ScreenHelper.height * 0.8, alignment: .center)
+            Image("slot_machine")
+                .resizable()
+                .scaledToFit()
+                .frame(maxHeight: ScreenHelper.height * 0.8, alignment: .center)
             
             SlotGameMachineColumns()
         }
+        
+//        GeometryReader { proxyReader in
+//
+//        }
+//        .background(Color.red)
     }
 }
 
