@@ -24,8 +24,9 @@ struct CarouselTourGuide: View {
     
     private let snapConfig = SnapCarouselConfigure(
         isWrap: false,
-        autoScroll: .activeOneTime(4),
-        anchorAnimateItem: .bottom
+        autoScroll: .active(1.5),
+        anchorAnimateItem: .bottom,
+        animationDuration: 0.7
     )
     
     private func openSettingForApp() {

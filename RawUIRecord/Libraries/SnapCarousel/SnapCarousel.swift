@@ -14,10 +14,12 @@ public struct SnapCarousel<Data, ID, Content>: View where Data: RandomAccessColl
     
     public var body: some View {
         ZStack(alignment: viewModel.pageIndicatorConfig.placement) {
-            GeometryReader { proxy -> AnyView in
+            GeometryReader { proxy -> SnapCarouselContent in
                 viewModel.viewSize = proxy.size
-                return AnyView(generateContent(proxy: proxy))
-            }.clipped()
+                print("Re-render when auto scroll")
+                return SnapCarouselContent(viewModel: viewModel, proxy: proxy, content: content)
+            }
+            .clipped()
             
             SnapCarouselPageIndicatorView(
                 selectedIndex: $viewModel.activeIndex,
@@ -26,29 +28,38 @@ public struct SnapCarousel<Data, ID, Content>: View where Data: RandomAccessColl
             )
         }
     }
+}
+
+private struct SnapCarouselContent<Data, ID, Content>: View where Data: RandomAccessCollection, ID: Hashable, Content: View {
+    @ObservedObject var viewModel: SnapCarouselViewModel<Data, ID>
+    let proxy: GeometryProxy
+    let content: (Data.Element) -> Content
     
-    @ViewBuilder
-    private func generateContent(proxy: GeometryProxy) -> some View {
+    var body: some View {
         HStack(spacing: viewModel.spacing) {
             ForEach(viewModel.data, id: viewModel.dataId) {
                 content($0)
                     .frame(width: viewModel.itemWidth)
                     .scaleEffect(x: 1, y: viewModel.itemScaling($0), anchor: viewModel.anchorAnimateItem)
+                    .transition(AnyTransition.slide)
+                    .animation(.spring(duration: 0.8), value: viewModel.offset)
             }
         }
         .frame(width: proxy.size.width, height: proxy.size.height, alignment: .leading)
-        .offset(x: viewModel.offset)
+        .offset(x: CGFloat(viewModel.offset))
         .gesture(viewModel.tapGesture)
-        .animation(viewModel.offsetAnimation, value: viewModel.offset)
-        .onReceiveTimerListener(timer: viewModel.timer, perform: viewModel.receiveTimer)
-        .onReceiveAppLifeCycle(perform: viewModel.setTimerActive)
-        .overlay(
-            SnapCarouselToggleAutoScroll(
-                autoScrollState: Binding<SnapCarouselAutoScrollState>(get: { viewModel.autoScrollCarouselState }, set: {_ in}),
-                controllOffsetY: viewModel.controlButtonOffetY,
-                onClickIcon: viewModel.handleAutoScrollState
-            )
-        )
+        .onAppear {
+            self.viewModel.makeAutoScroll()
+        }
+//        .onReceiveTimerListener(timer: viewModel.timer, perform: viewModel.receiveTimer)
+//        .onReceiveAppLifeCycle(perform: viewModel.setTimerActive)
+//        .overlay(
+//            SnapCarouselToggleAutoScroll(
+//                autoScrollState: Binding<SnapCarouselAutoScrollState>(get: { viewModel.autoScrollCarouselState }, set: {_ in}),
+//                controllOffsetY: viewModel.controlButtonOffetY,
+//                onClickIcon: viewModel.handleAutoScrollState
+//            )
+//        )
     }
 }
 

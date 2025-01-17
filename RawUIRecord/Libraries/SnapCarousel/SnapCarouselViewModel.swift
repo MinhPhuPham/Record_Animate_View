@@ -65,7 +65,7 @@ class SnapCarouselViewModel<Data, ID>: ObservableObject where Data : RandomAcces
     var viewSize: CGSize = .zero
     
     /// carousel state for toggle auto scroll
-    @Published var autoScrollCarouselState: SnapCarouselAutoScrollState = .unset
+    var autoScrollCarouselState: SnapCarouselAutoScrollState = .unset
     
     /// Counting of time
     /// work when `isTimerActive` is true
@@ -324,6 +324,35 @@ extension SnapCarouselViewModel {
 
 // MARK: - Receive Timer
 extension SnapCarouselViewModel {
+    
+    func makeAutoScroll() {
+        guard isTimerActive else {
+            return
+        }
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + autoScroll.interval + _config.animationDuration) { [weak self] in
+            if self?.activeIndex == (self?.data.count ?? 0) - 1 {
+                // Case isShowOneTime
+                if let isActiveOneTime = self?._config.autoScroll.isActiveOneTime, isActiveOneTime {
+                    self?.resetTiming()
+                    self?.setTimerActive(false)
+                    self?.setCarouselState(.resetOneTime)
+                    
+                    return
+                }
+                
+                /// `isWrap` is false.
+                /// Revert to the first view after scrolling to the last view
+                self?.activeIndex = 0
+            } else {
+                /// `isWrap` is true.
+                /// Incremental, calculation of offset by `offsetChanged(_: proxy:)`
+                self?.activeIndex += 1
+            }
+            
+            self?.makeAutoScroll()
+        }
+    }
     
     /// timer change
     func receiveTimer(_ value: Timer.TimerPublisher.Output) {
