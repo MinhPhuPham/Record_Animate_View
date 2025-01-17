@@ -8,27 +8,16 @@
 import SwiftUI
 import Combine
 
-class SlotMachineViewModel: ObservableObject {
-    enum ESlotMachineState {
-        case unset
-        case spining
-        case played
-        
-        var isSpining: Bool {
-            self == .spining
-        }
+struct SlotMachineWinningState {
+    var isWinning: Bool = false
+    var firstSelectedIndex: Int?
+    
+    var isInWinMode: Bool {
+        isWinning && firstSelectedIndex != nil
     }
-    
-    static let data: [ContinuousInfiniteModel] = [
-        ContinuousInfiniteModel(imageName: "apple"),
-        ContinuousInfiniteModel(imageName: "bell"),
-        ContinuousInfiniteModel(imageName: "cherry"),
-        ContinuousInfiniteModel(imageName: "clover"),
-        ContinuousInfiniteModel(imageName: "diamond"),
-        ContinuousInfiniteModel(imageName: "grape"),
-        ContinuousInfiniteModel(imageName: "lemon")
-    ]
-    
+}
+
+class SlotMachineViewModel: ObservableObject {
     // An array to hold references to each column's scrolling state
     var references: [ContinuousInfiniteReference<ContinuousInfiniteCollectionView>] = [
         ContinuousInfiniteReference<ContinuousInfiniteCollectionView>(),
@@ -38,22 +27,25 @@ class SlotMachineViewModel: ObservableObject {
     
     private var referencesIsSpining: [ContinuousInfiniteReference<ContinuousInfiniteCollectionView>] {
         references.filter { reference in
-            // Check if the object is not nil and not rolling
-            if let object = reference.object {
-                return object.isRolling
-            }
-            return false
+            return reference.object?.isRolling ?? false
         }
     }
     
+    var musicPlayer: [EMusicPlayers: PlaySoundHelper] = [
+//        .backgroundSound: PlaySoundHelper(soundName: EMusicPlayers.backgroundSound.rawValue, isLoop: true, volume: 0.3),
+        .gameOverSound: PlaySoundHelper(soundName: EMusicPlayers.gameOverSound.rawValue),
+        .spinSound: PlaySoundHelper(soundName: EMusicPlayers.spinSound.rawValue),
+        .winSound: PlaySoundHelper(soundName: EMusicPlayers.winSound.rawValue)
+    ]
+    
     @Published var spiningState: ESlotMachineState = .unset
     
-    @Published var isWinning: Bool = false
-    
-    private var currentWinningIndex: Int?
+    var winningState: SlotMachineWinningState = .init()
     
     private func setWinningIndex(_ index: Int?) {
-        self.currentWinningIndex = index
+        if self.winningState.firstSelectedIndex == index { return }
+        
+        self.winningState.firstSelectedIndex = index
     }
     
     private func setSpiningState(_ state: ESlotMachineState) {
@@ -66,26 +58,20 @@ class SlotMachineViewModel: ObservableObject {
 // callback function
 extension SlotMachineViewModel {
     func onScrollStopedAt(_ index: Int?) {
-        print("Run to onScrollStopedAt", currentWinningIndex, index, isWinning)
+        print("Run to onScrollStopedAt", winningState, index)
         
-        if !isWinning {
+        if winningState.firstSelectedIndex != nil {
             return
         }
-        // Break if check currentWinningIndex has value or isWinning is false
-        if let _ = currentWinningIndex {
-            return
-        }
-        
-        print("Run to here", index, isWinning)
         
         self.setWinningIndex(index)
         
-        self.setWinningIndexForAllChild(index)
+        self.setWinningStateForAllChild(winningState)
     }
     
-    private func setWinningIndexForAllChild(_ index: Int?) {
+    private func setWinningStateForAllChild(_ winningState: SlotMachineWinningState) {
         references.forEach { reference in
-            reference.object?.setWinningIndex(index)
+            reference.object?.setWinningState(winningState)
         }
     }
 }
@@ -98,8 +84,8 @@ extension SlotMachineViewModel {
         
         for (index, reference) in references.enumerated() {
             let delay = Double(index) * 0.2  // 0.2s delay for each additional column
-            DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
-                reference.object?.startAutomaticScroll()
+            DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak reference] in
+                reference?.object?.startAutomaticScroll()
             }
         }
     }
@@ -108,8 +94,8 @@ extension SlotMachineViewModel {
     func stopAllScrolling() {
         for (index, reference) in referencesIsSpining.enumerated() {
             let delay = Double(index) * 0.2  // 0.2s delay for each additional column
-            DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self] in
-                reference.object?.stopAutomaticScroll()
+            DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self, weak reference] in
+                reference?.object?.stopScrollImmediately()
                 
                 self?.setFinishedGameIfFinishAll()
             }
@@ -117,13 +103,13 @@ extension SlotMachineViewModel {
     }
     
     func stopScrollingForElement(at index: Int) {
-        references[index].object?.stopAutomaticScroll()
+        references[index].object?.stopScrollImmediately()
         
         setFinishedGameIfFinishAll()
     }
     
     func clickSpinButton() {
-//        PlaySouldHelper().playSound(sound: "spin")
+        musicPlayer[.spinSound]?.playSound()
         
         switch spiningState {
         case .unset:
@@ -144,11 +130,14 @@ extension SlotMachineViewModel {
     private func setFinishGameActions() {
         print("Run to setFinishGameActions")
         setSpiningState(.played)
+        setWinningIndex(nil)
         
-        setWinningIndexForAllChild(nil)
-//        DispatchQueue.main.async {
-//            let soundStateName = self.isWinning ? "win" : "game-over"
-//            PlaySouldHelper().playSound(sound: soundStateName)
-//        }
+        setWinningStateForAllChild(winningState)
+        
+        if winningState.isWinning {
+            musicPlayer[.winSound]?.playSound()
+        } else {
+            musicPlayer[.gameOverSound]?.playSound()
+        }
     }
 }

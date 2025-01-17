@@ -8,33 +8,24 @@
 import SwiftUI
 
 struct SlotGameMachineColumns: View {
-    @EnvironmentObject private var slotMachineVM: SlotMachineViewModel
-    
     var body: some View {
         HStack {
             ForEach(0..<3, id: \.self) { index in
-                SlotGameColumn(
-                    reference: slotMachineVM.references[index],
-                    onScrollStopedAt: slotMachineVM.onScrollStopedAt
-                )
+                SlotGameColumn(index: index)
             }
         }
     }
 }
 
 private struct SlotGameColumn: View {
-    let reference: ContinuousInfiniteReference<ContinuousInfiniteCollectionView>
-    let data: [ContinuousInfiniteModel] = SlotMachineViewModel.data
-    var onScrollStopedAt: (Int?) -> Void
+    let index: Int
     
     var body: some View {
         SlotColumnInfiniteUIScrollView(
-            reference: reference,
-            models: data,
+            index: index,
             configure: .init(
                 scrollSpeed: 30.0
-            ),
-            onScrollStopedAt: onScrollStopedAt
+            )
         )
         .frame(width: 80, height: 140)
     }
@@ -45,25 +36,30 @@ class ContinuousInfiniteReference<T: AnyObject> {
 }
 
 private struct SlotColumnInfiniteUIScrollView: UIViewControllerRepresentable {
-    let reference: ContinuousInfiniteReference<ContinuousInfiniteCollectionView>
+    @EnvironmentObject private var slotMachineVM: SlotMachineViewModel
     
-    var models: [ContinuousInfiniteModel]
+    let index: Int
+    
+    var models: [ContinuousInfiniteModel] = Constant.slotGameSelections
     // Additional variables
     var configure: CongfigureContinuousInfinite
-    var onScrollStopedAt: (Int?) -> Void
     
     func makeUIViewController(context: Context) -> ContinuousInfiniteCollectionView {
-        let continousInfiniteCollectionView = ContinuousInfiniteCollectionView(models: models, configure: configure)
+        let continousInfiniteCollectionView = ContinuousInfiniteCollectionView(
+            models: models,
+            configure: configure
+        )
         
-        reference.object = continousInfiniteCollectionView
-        continousInfiniteCollectionView.onScrollStopedAt = { index in
-            onScrollStopedAt(index)
+        slotMachineVM.references[index].object = continousInfiniteCollectionView
+        
+        continousInfiniteCollectionView.onScrollStopedAt = { [weak slotMachineVM] index in
+            slotMachineVM?.onScrollStopedAt(index)
         }
         
         return continousInfiniteCollectionView
     }
     
     func updateUIViewController(_ container: ContinuousInfiniteCollectionView, context: Context) {
-        
+        container.setWinningState(slotMachineVM.winningState)
     }
 }

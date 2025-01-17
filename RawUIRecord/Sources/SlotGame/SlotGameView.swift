@@ -8,14 +8,13 @@
 import SwiftUI
 
 struct SlotGameView: View {
-    @StateObject private var backgroundPlayerVM = PlaySoundViewModel()
     @StateObject private var slotMachineVM = SlotMachineViewModel()
     
-    private func viewDidLoad() {
-        DispatchQueue.main.async {
-            backgroundPlayerVM.playSound(sound: "background-music", type: "mp3", numberOfLoops: -1)
-        }
-    }
+//    private func viewDidLoad() {
+//        DispatchQueue.main.async { [weak slotMachineVM] in
+//            slotMachineVM?.musicPlayer[.backgroundSound]?.playSound()
+//        }
+//    }
     
     var body: some View {
         ZStack {
@@ -24,9 +23,9 @@ struct SlotGameView: View {
             SlotGameContent()
         }
         .environmentObject(slotMachineVM)
-        .onAppear {
+//        .onAppear {
 //            viewDidLoad()
-        }
+//        }
     }
 }
 

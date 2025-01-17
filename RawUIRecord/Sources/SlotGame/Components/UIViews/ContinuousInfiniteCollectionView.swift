@@ -19,7 +19,7 @@ class ContinuousInfiniteCollectionView: UIViewController {
     }
     
     // Winning item if need
-    var winnningItemIndex: Int?
+    var winningState: SlotMachineWinningState = .init()
     
     var onScrollStopedAt: ((Int) -> Void)?
     
@@ -91,14 +91,14 @@ extension ContinuousInfiniteCollectionView {
         displayLink?.preferredFramesPerSecond = 60
     }
     
-    func stopAutomaticScroll() {
-        print("stopAutomaticScroll winnningItemIndex \(winnningItemIndex)")
+    func stopScrollImmediately() {
+        print("stopScrollImmediately winningState \(winningState)")
+        
         onStopedScroll()
         
         isRolling = false
         
-        displayLink?.isPaused = true
-        displayLink = nil
+        stopAutomaticScroll()
     }
 
     @objc private func handleScroll() {
@@ -107,23 +107,34 @@ extension ContinuousInfiniteCollectionView {
         // Update content offset for downward scrolling
         collectionView.contentOffset.y -= configure.scrollSpeed
     }
+    
+    private func stopAutomaticScroll() {
+        displayLink?.isPaused = true
+        displayLink = nil
+    }
 }
 
 // Handle on stop logic
 extension ContinuousInfiniteCollectionView {
-    func setWinningIndex(_ index: Int?) {
-        self.winnningItemIndex = index
+    func setWinningState(_ state: SlotMachineWinningState) {
+        self.winningState = state
     }
     
     private func onStopedScroll() {
-        let centerVisibleY = collectionView.bounds.midY + collectionView.contentOffset.y
+        let midContentOffset = collectionView.bounds.midY + collectionView.contentOffset.y
+        let centerIndex = Int(midContentOffset / itemHeight) % models.count
         
-        let centerIndex = Int(centerVisibleY / itemHeight) % models.count
+        let indexToScroll: Int
+        if winningState.isInWinMode, let winningIndex = winningState.firstSelectedIndex {
+            indexToScroll = winningIndex
+        } else {
+            indexToScroll = centerIndex
+        }
+
+        let adjustedIndex = indexToScroll == centerIndex ? centerIndex + 1 : indexToScroll
         
-        // Emit to parent
-        onScrollStopedAt?(centerIndex)
-        
-        scrollToItem(at: winnningItemIndex ?? centerIndex)
+        onScrollStopedAt?(adjustedIndex)
+        scrollToItem(at: adjustedIndex)
     }
     
     private func scrollToItem(at index: Int) {
@@ -131,7 +142,7 @@ extension ContinuousInfiniteCollectionView {
         // Calculate the desired content offset for centering the item
         let newOffsetY = CGFloat(index) * itemHeight
         
-        print("Scrolling to index: \(index), offset: \(newOffsetY) winningCurrentIndex \(winnningItemIndex)")
+        print("Scrolling to index: \(index), offset: \(newOffsetY) winningState \(winningState)")
         
         // Using animation block or no animation according to requirement
         UIView.animate(withDuration: 0.1) {
