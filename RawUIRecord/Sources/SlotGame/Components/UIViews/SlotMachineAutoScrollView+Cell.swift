@@ -1,5 +1,5 @@
 //
-//  ContinuousInfiniteCollectionView+Cell.swift
+//  SlotMachineAutoScrollView+Cell.swift
 //  RawUIRecord
 //
 //  Created by Phu Pham on 16/1/25.
@@ -38,7 +38,7 @@ class ContiniousInfiniteCollectionViewCell: UICollectionViewCell {
         ])
     }
     
-    func configure(with model: ContinuousInfiniteModel){
+    func configure(with model: SlotMachineItemModel){
         imageView.image = UIImage(named: model.imageName)
         imageView.backgroundColor = model.backgroundColor
         

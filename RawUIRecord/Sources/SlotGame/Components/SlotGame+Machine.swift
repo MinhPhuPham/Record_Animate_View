@@ -8,6 +8,14 @@
 import SwiftUI
 
 struct SlotGameMachineView: View {
+    @StateObject private var slotGameVM = SlotGameViewModel()
+    
+    private func viewDidLoad() {
+        DispatchQueue.main.async { [weak slotGameVM] in
+            slotGameVM?.musicPlayer[.backgroundSound]?.playSound()
+        }
+    }
+    
     var body: some View {
         VStack(spacing: 30) {
             SlotGameWinningControl()
@@ -15,6 +23,10 @@ struct SlotGameMachineView: View {
             SlotGameMachineElement()
             
             SlotGameSpinButton()
+        }
+        .environmentObject(slotGameVM)
+        .onAppear {
+            viewDidLoad()
         }
     }
 }

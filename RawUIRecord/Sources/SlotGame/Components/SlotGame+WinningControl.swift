@@ -8,11 +8,11 @@
 import SwiftUI
 
 struct SlotGameWinningControl: View {
-    @EnvironmentObject private var slotMachineVM: SlotMachineViewModel
+    @EnvironmentObject private var slotGameVM: SlotGameViewModel
 
     var body: some View {
-        Toggle(isOn: $slotMachineVM.winningState.isWinning) {
-            Text("isWinning:")
+        Toggle(isOn: $slotGameVM.winningState.isWinning) {
+            Text("Winning:")
                 .font(.headline.weight(.medium))
                 .foregroundColor(Color.white)
         }

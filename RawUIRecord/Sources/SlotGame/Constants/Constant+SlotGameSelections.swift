@@ -8,13 +8,13 @@
 import SwiftUI
 
 extension Constant {
-    static var slotGameSelections: [ContinuousInfiniteModel] = [
-        ContinuousInfiniteModel(imageName: "apple"),
-        ContinuousInfiniteModel(imageName: "bell"),
-        ContinuousInfiniteModel(imageName: "cherry"),
-        ContinuousInfiniteModel(imageName: "clover"),
-        ContinuousInfiniteModel(imageName: "diamond"),
-        ContinuousInfiniteModel(imageName: "grape"),
-        ContinuousInfiniteModel(imageName: "lemon")
+    static var slotGameSelections: [SlotMachineItemModel] = [
+        SlotMachineItemModel(imageName: "apple"),
+        SlotMachineItemModel(imageName: "bell"),
+        SlotMachineItemModel(imageName: "cherry"),
+        SlotMachineItemModel(imageName: "clover"),
+        SlotMachineItemModel(imageName: "diamond"),
+        SlotMachineItemModel(imageName: "grape"),
+        SlotMachineItemModel(imageName: "lemon")
     ]
 }

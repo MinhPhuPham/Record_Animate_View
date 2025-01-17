@@ -36,30 +36,30 @@ class ContinuousInfiniteReference<T: AnyObject> {
 }
 
 private struct SlotColumnInfiniteUIScrollView: UIViewControllerRepresentable {
-    @EnvironmentObject private var slotMachineVM: SlotMachineViewModel
+    @EnvironmentObject private var slotGameVM: SlotGameViewModel
     
     let index: Int
     
-    var models: [ContinuousInfiniteModel] = Constant.slotGameSelections
+    var models: [SlotMachineItemModel] = Constant.slotGameSelections
     // Additional variables
-    var configure: CongfigureContinuousInfinite
+    var configure: SlotMachineCongfigure
     
-    func makeUIViewController(context: Context) -> ContinuousInfiniteCollectionView {
-        let continousInfiniteCollectionView = ContinuousInfiniteCollectionView(
+    func makeUIViewController(context: Context) -> SlotMachineAutoScrollView {
+        let continousInfiniteCollectionView = SlotMachineAutoScrollView(
             models: models,
             configure: configure
         )
         
-        slotMachineVM.references[index].object = continousInfiniteCollectionView
+        slotGameVM.references[index].object = continousInfiniteCollectionView
         
-        continousInfiniteCollectionView.onScrollStopedAt = { [weak slotMachineVM] index in
-            slotMachineVM?.onScrollStopedAt(index)
+        continousInfiniteCollectionView.onScrollStopedAt = { [weak slotGameVM] index in
+            slotGameVM?.onScrollStopedAt(index)
         }
         
         return continousInfiniteCollectionView
     }
     
-    func updateUIViewController(_ container: ContinuousInfiniteCollectionView, context: Context) {
-        container.setWinningState(slotMachineVM.winningState)
+    func updateUIViewController(_ container: SlotMachineAutoScrollView, context: Context) {
+        container.setWinningState(slotGameVM.winningState)
     }
 }

@@ -1,5 +1,5 @@
 //
-//  ContinuousInfiniteCollectionView.swift
+//  SlotMachineAutoScrollView.swift
 //  RawUIRecord
 //
 //  Created by Phu Pham on 16/1/25.
@@ -7,19 +7,19 @@
 
 import UIKit
 
-class ContinuousInfiniteCollectionView: UIViewController {
+class SlotMachineAutoScrollView: UIViewController {
 
-    var models: [ContinuousInfiniteModel]
+    var models: [SlotMachineItemModel]
 
     // Additional variables
-    var configure: CongfigureContinuousInfinite = .init()
+    var configure: SlotMachineCongfigure = .init()
     
     var itemHeight: CGFloat {
         collectionView.frame.height / CGFloat(configure.visibleItemsCount)
     }
     
     // Winning item if need
-    var winningState: SlotMachineWinningState = .init()
+    var winningState: SlotGameWinningState = .init()
     
     var onScrollStopedAt: ((Int) -> Void)?
     
@@ -51,7 +51,7 @@ class ContinuousInfiniteCollectionView: UIViewController {
     }()
     
     // Custom initializer to set configs
-    init(models: [ContinuousInfiniteModel], configure: CongfigureContinuousInfinite) {
+    init(models: [SlotMachineItemModel], configure: SlotMachineCongfigure) {
         self.models = models
         self.configure = configure
         
@@ -82,7 +82,7 @@ class ContinuousInfiniteCollectionView: UIViewController {
 }
 
 // Automatic scroll using CADisplayLink
-extension ContinuousInfiniteCollectionView {
+extension SlotMachineAutoScrollView {
     func startAutomaticScroll() {
         isRolling = true
         
@@ -115,8 +115,8 @@ extension ContinuousInfiniteCollectionView {
 }
 
 // Handle on stop logic
-extension ContinuousInfiniteCollectionView {
-    func setWinningState(_ state: SlotMachineWinningState) {
+extension SlotMachineAutoScrollView {
+    func setWinningState(_ state: SlotGameWinningState) {
         self.winningState = state
     }
     
@@ -151,7 +151,7 @@ extension ContinuousInfiniteCollectionView {
     }
 }
 
-extension ContinuousInfiniteCollectionView: UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
+extension SlotMachineAutoScrollView: UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
 
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         totalElements = configure.buffer + models.count
@@ -179,7 +179,7 @@ extension ContinuousInfiniteCollectionView: UICollectionViewDataSource, UICollec
     }
 }
 
-extension ContinuousInfiniteCollectionView: UIScrollViewDelegate{
+extension SlotMachineAutoScrollView: UIScrollViewDelegate{
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
         let totalHeight = itemHeight * CGFloat(models.count)
 

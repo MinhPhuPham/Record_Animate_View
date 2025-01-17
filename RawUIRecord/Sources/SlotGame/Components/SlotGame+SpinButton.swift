@@ -8,10 +8,10 @@
 import SwiftUI
 
 struct SlotGameSpinButton: View {
-    @EnvironmentObject private var slotMachineVM: SlotMachineViewModel
+    @EnvironmentObject private var slotGameVM: SlotGameViewModel
     
     private var spningText: String {
-        switch slotMachineVM.spiningState {
+        switch slotGameVM.spiningState {
         case .unset:
             "Spin"
         case .spining:
@@ -25,15 +25,15 @@ struct SlotGameSpinButton: View {
         VStack(spacing: 24) {
             HStack {
                 ForEach(0..<3, id: \.self) { index in
-                    SlotGameStopButton(index: index, onStopClick: { [weak slotMachineVM] in
-                        slotMachineVM?.stopScrollingForElement(at: index)
+                    SlotGameStopButton(index: index, onStopClick: { [weak slotGameVM] in
+                        slotGameVM?.stopScrollingForElement(at: index)
                     })
                 }
             }
-            .disabled(!slotMachineVM.spiningState.isSpining)
-            .opacity(slotMachineVM.spiningState.isSpining ? 1 : 0.6)
+            .disabled(!slotGameVM.spiningState.isSpining)
+            .opacity(slotGameVM.spiningState.isSpining ? 1 : 0.6)
             
-            Button(action: slotMachineVM.clickSpinButton) {
+            Button(action: slotGameVM.clickSpinButton) {
                 Text(spningText)
                     .font(.headline)
                     .foregroundColor(.green)

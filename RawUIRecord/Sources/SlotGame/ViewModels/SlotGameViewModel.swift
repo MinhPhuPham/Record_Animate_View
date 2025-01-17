@@ -1,5 +1,5 @@
 //
-//  SlotMachineViewModel.swift
+//  SlotGameViewModel.swift
 //  RawUIRecord
 //
 //  Created by Phu Pham on 16/1/25.
@@ -8,7 +8,7 @@
 import SwiftUI
 import Combine
 
-struct SlotMachineWinningState {
+struct SlotGameWinningState {
     var isWinning: Bool = false
     var firstSelectedIndex: Int?
     
@@ -17,22 +17,22 @@ struct SlotMachineWinningState {
     }
 }
 
-class SlotMachineViewModel: ObservableObject {
+class SlotGameViewModel: ObservableObject {
     // An array to hold references to each column's scrolling state
-    var references: [ContinuousInfiniteReference<ContinuousInfiniteCollectionView>] = [
-        ContinuousInfiniteReference<ContinuousInfiniteCollectionView>(),
-        ContinuousInfiniteReference<ContinuousInfiniteCollectionView>(),
-        ContinuousInfiniteReference<ContinuousInfiniteCollectionView>()
+    var references: [ContinuousInfiniteReference<SlotMachineAutoScrollView>] = [
+        ContinuousInfiniteReference<SlotMachineAutoScrollView>(),
+        ContinuousInfiniteReference<SlotMachineAutoScrollView>(),
+        ContinuousInfiniteReference<SlotMachineAutoScrollView>()
     ]
     
-    private var referencesIsSpining: [ContinuousInfiniteReference<ContinuousInfiniteCollectionView>] {
+    private var referencesIsSpining: [ContinuousInfiniteReference<SlotMachineAutoScrollView>] {
         references.filter { reference in
             return reference.object?.isRolling ?? false
         }
     }
     
     var musicPlayer: [EMusicPlayers: PlaySoundHelper] = [
-//        .backgroundSound: PlaySoundHelper(soundName: EMusicPlayers.backgroundSound.rawValue, isLoop: true, volume: 0.3),
+        .backgroundSound: PlaySoundHelper(soundName: EMusicPlayers.backgroundSound.rawValue, isLoop: true, volume: 0.3, isBigFile: true),
         .gameOverSound: PlaySoundHelper(soundName: EMusicPlayers.gameOverSound.rawValue),
         .spinSound: PlaySoundHelper(soundName: EMusicPlayers.spinSound.rawValue),
         .winSound: PlaySoundHelper(soundName: EMusicPlayers.winSound.rawValue)
@@ -40,7 +40,7 @@ class SlotMachineViewModel: ObservableObject {
     
     @Published var spiningState: ESlotMachineState = .unset
     
-    var winningState: SlotMachineWinningState = .init()
+    var winningState: SlotGameWinningState = .init()
     
     private func setWinningIndex(_ index: Int?) {
         if self.winningState.firstSelectedIndex == index { return }
@@ -56,7 +56,7 @@ class SlotMachineViewModel: ObservableObject {
 }
 
 // callback function
-extension SlotMachineViewModel {
+extension SlotGameViewModel {
     func onScrollStopedAt(_ index: Int?) {
         print("Run to onScrollStopedAt", winningState, index)
         
@@ -69,7 +69,7 @@ extension SlotMachineViewModel {
         self.setWinningStateForAllChild(winningState)
     }
     
-    private func setWinningStateForAllChild(_ winningState: SlotMachineWinningState) {
+    private func setWinningStateForAllChild(_ winningState: SlotGameWinningState) {
         references.forEach { reference in
             reference.object?.setWinningState(winningState)
         }
@@ -77,7 +77,7 @@ extension SlotMachineViewModel {
 }
 
 // Action functions
-extension SlotMachineViewModel {
+extension SlotGameViewModel {
     // Start scrolling all columns
     func startScrolling() {
         setSpiningState(.spining)
