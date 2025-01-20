@@ -10,6 +10,9 @@ import SwiftUI
 struct SlotGameSpinButton: View {
     @EnvironmentObject private var slotGameVM: SlotGameViewModel
     
+    @Environment(\.layoutPositionConfig) var layoutPositionConfig
+    var parentSize: CGSize
+    
     private var spningText: String {
         switch slotGameVM.spiningState {
         case .unset:
@@ -21,53 +24,64 @@ struct SlotGameSpinButton: View {
         case .playingEnding:
             "Ending..."
         case .played:
-            "↪ Play again"
+            "↪ Again"
         }
     }
     
     var body: some View {
-        VStack(spacing: 45) {
-            HStack {
-                ForEach(0..<3, id: \.self) { index in
-                    SlotGameStopButton(index: index, onStopClick: { [weak slotGameVM] in
-                        slotGameVM?.stopScrollingForElement(at: index)
-                    })
-                }
+        Group {
+            ForEach(0..<3, id: \.self) { index in
+                SlotGameStopButton(
+                    index: index,
+                    parentSize: parentSize,
+                    buttonPosition: layoutPositionConfig.buttonsConfigs[index],
+                    onStopClick: { [weak slotGameVM] in
+                    slotGameVM?.stopScrollingForElement(at: index)
+                })
             }
-            .disabled(!slotGameVM.spiningState.isPlaying)
-            .opacity(slotGameVM.spiningState.isPlaying ? 1 : 0.6)
-            
-            Button(action: slotGameVM.clickSpinButton) {
-                Text(spningText)
-                    .font(.headline)
-                    .foregroundColor(.green)
-                    .padding(.vertical, 8)
-                    .padding(.horizontal)
-            }
-            .background(
-                RoundedRectangle(cornerRadius: 10)
-                    .stroke(Color.green, lineWidth: 3) // green outline with width of 3
-            )
-            .disabled(slotGameVM.spiningState.isBlockingSpinBtn)
         }
-        .padding(.top, 10)
+        .disabled(!slotGameVM.spiningState.isPlaying)
+        .opacity(slotGameVM.spiningState.isPlaying ? 1 : 0.6)
+        
+        Button(action: slotGameVM.clickSpinButton) {
+            Text(spningText)
+                .font(.footnote)
+                .foregroundColor(.white)
+                .frame(
+                    width: parentSize.width * layoutPositionConfig.playButtonConfig.widthRatioWithParent,
+                    height: parentSize.height * layoutPositionConfig.playButtonConfig.heightRatioWithParent,
+                    alignment: .center
+                )
+        }
+        .background(
+            RoundedRectangle(cornerRadius: 10)
+                .fill(Color.orange)
+        )
+        .disabled(slotGameVM.spiningState.isBlockingSpinBtn)
+        .frameSetting(parentSize: parentSize, elementConfigFrame: layoutPositionConfig.playButtonConfig)
     }
 }
 
 private struct SlotGameStopButton: View {
     let index: Int
+    var parentSize: CGSize
+    let buttonPosition: SlotMachineElementPositionModel
     let onStopClick: () -> Void
     
     var body: some View {
         Button(action: onStopClick) {
-            Text("Stop line \(index + 1)")
-                .foregroundColor(.appNotification)
-                .padding(.vertical, 5)
-                .padding(.horizontal, 10)
+            Text("\(index + 1)")
+                .foregroundColor(.white)
+                .frame(
+                    width: parentSize.width * buttonPosition.widthRatioWithParent,
+                    height: parentSize.height * buttonPosition.heightRatioWithParent,
+                    alignment: .center
+                )
         }
         .background(
             RoundedRectangle(cornerRadius: 10)
-                .stroke(Color.appNotification, lineWidth: 3) // green outline with width of 3
+                .fill(Color.orange)
         )
+        .frameSetting(parentSize: parentSize, elementConfigFrame: buttonPosition)
     }
 }

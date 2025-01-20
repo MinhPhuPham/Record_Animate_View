@@ -12,6 +12,7 @@ struct GameLayoutPositionConfigValueKey: EnvironmentKey {
     public static let defaultValue: GameLayoutPositionConfigModel = .init(
         slotMachineRawSize: .zero,
         slotColumnRawSize: .zero,
+        slotButtonControlSize: .zero,
         columnsConfigs: [],
         buttonsConfigs: [],
         playButtonConfig: .init(distanceFromLeftToParent: 0, distanceFromTopToParent: 0)

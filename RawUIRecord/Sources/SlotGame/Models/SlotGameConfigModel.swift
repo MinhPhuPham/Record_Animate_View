@@ -32,6 +32,7 @@ struct GameLayoutPositionConfigModel {
     init(
         slotMachineRawSize: CGSize,
         slotColumnRawSize: CGSize,
+        slotButtonControlSize: CGSize,
         columnsConfigs: [SlotMachineElementPositionModel],
         buttonsConfigs: [SlotMachineElementPositionModel],
         playButtonConfig: SlotMachineElementPositionModel
@@ -47,10 +48,13 @@ struct GameLayoutPositionConfigModel {
             return updatedColumn
         }
         
-        self.buttonsConfigs = columnsConfigs.map { column in
-            var updatedColumn = column
-            updatedColumn.slotMachineRawSize = slotMachineRawSize
-            return updatedColumn
+        self.buttonsConfigs = buttonsConfigs.map { column in
+            var updatedButton = column
+            updatedButton.widthRaw = slotButtonControlSize.width
+            updatedButton.heightRaw = slotButtonControlSize.height
+            updatedButton.slotMachineRawSize = slotMachineRawSize
+            
+            return updatedButton
         }
         
         self.playButtonConfig = playButtonConfig

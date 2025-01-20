@@ -25,8 +25,6 @@ struct SlotGameMachineView: View {
             SlotGameWinningControl()
             
             SlotGameMachineElement()
-            
-            SlotGameSpinButton()
         }
         .environmentObject(slotGameVM)
         .onAppear {
@@ -43,7 +41,11 @@ private struct SlotGameMachineElement: View {
                 .scaledToFit()
                 .overlay(
                     GeometryReader { proxyReader in
-                        SlotGameMachineColumns(proxyReader: proxyReader)
+                        Group {
+                            SlotGameMachineColumns(parentSize: proxyReader.size)
+                            
+                            SlotGameSpinButton(parentSize: proxyReader.size)
+                        }
                     }
                 )
         }
