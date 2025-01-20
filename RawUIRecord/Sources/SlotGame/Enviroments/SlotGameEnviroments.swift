@@ -9,7 +9,13 @@ import SwiftUI
 
 // MARK: - theme
 struct GameLayoutPositionConfigValueKey: EnvironmentKey {
-    public static let defaultValue: GameLayoutPositionConfigModel = .init(slotMachineRawSize: .zero, columnsConfigs: [])
+    public static let defaultValue: GameLayoutPositionConfigModel = .init(
+        slotMachineRawSize: .zero,
+        slotColumnRawSize: .zero,
+        columnsConfigs: [],
+        buttonsConfigs: [],
+        playButtonConfig: .init(distanceFromLeftToParent: 0, distanceFromTopToParent: 0)
+    )
 }
 
 public extension EnvironmentValues {

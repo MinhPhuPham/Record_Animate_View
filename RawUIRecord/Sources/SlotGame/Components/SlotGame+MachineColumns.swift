@@ -19,10 +19,6 @@ struct SlotGameMachineColumns: View {
                     proxyReader: proxyReader,
                     columnConfig: layoutPositionConfig.columnsConfigs[index]
                 )
-                .onAppear {
-                    print("layoutPositionConfig.columnsConfigs[index]", layoutPositionConfig.columnsConfigs[index],
-                          layoutPositionConfig.columnsConfigs[index].xRatio, layoutPositionConfig.columnsConfigs[index].yRatio)
-                }
             }
         }
     }
@@ -37,9 +33,11 @@ private struct SlotGameColumn: View {
         SlotColumnInfiniteUIScrollView(
             index: index,
             configure: .init(
+                visibleItemsCount: 1,
                 scrollSpeed: 30.0
             )
         )
+        .background(Color.white)
         .frame(
             width: proxyReader.size.width * columnConfig.widthRatioWithParent,
             height: proxyReader.size.height * columnConfig.heightRatioWithParent,
@@ -49,10 +47,6 @@ private struct SlotGameColumn: View {
             x: proxyReader.size.width * columnConfig.xRatio,
             y: proxyReader.size.height * columnConfig.yRatio
         )
-        .background(Color.yellow.opacity(0.3))
-        .onAppear {
-            print("ValueY", proxyReader.size.height * columnConfig.yRatio)
-        }
     }
 }
 

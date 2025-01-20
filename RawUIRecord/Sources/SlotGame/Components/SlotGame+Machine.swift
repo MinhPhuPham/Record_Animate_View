@@ -37,23 +37,17 @@ struct SlotGameMachineView: View {
 
 private struct SlotGameMachineElement: View {
     var body: some View {
-        GeometryReader { proxyReader in
-            ZStack {
-                Image("slot_machine")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: proxyReader.size.width, height: proxyReader.size.height, alignment: .center)
-                
-                SlotGameMachineColumns(proxyReader: proxyReader)
-                    .frame(width: proxyReader.size.width, height: proxyReader.size.height, alignment: .center)
-                    .background(Color.red.opacity(0.3))
-            }
-            .onAppear {
-                print("proxyReader", proxyReader.size, ScreenHelper.width, ScreenHelper.height)
-            }
+        ZStack {
+            Image("slot_machine")
+                .resizable()
+                .scaledToFit()
+                .overlay(
+                    GeometryReader { proxyReader in
+                        SlotGameMachineColumns(proxyReader: proxyReader)
+                    }
+                )
         }
-        .frame(height: ScreenHelper.width * 0.7, alignment: .center)
-        .background(Color.white.opacity(0.3))
+        .frame(height: ScreenHelper.width * 0.8, alignment: .center)
     }
 }
 

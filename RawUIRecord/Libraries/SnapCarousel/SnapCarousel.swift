@@ -16,7 +16,6 @@ public struct SnapCarousel<Data, ID, Content>: View where Data: RandomAccessColl
         ZStack(alignment: viewModel.pageIndicatorConfig.placement) {
             GeometryReader { proxy -> SnapCarouselContent in
                 viewModel.viewSize = proxy.size
-                print("Re-render when auto scroll")
                 return SnapCarouselContent(viewModel: viewModel, proxy: proxy, content: content)
             }
             .clipped()

@@ -10,25 +10,20 @@ import SwiftUI
 struct SlotGameView: View {
     let slotGameConfigure = SlotGameConfigModel(
         layoutPositionConfig: GameLayoutPositionConfigModel(
-            slotMachineRawSize: CGSize(width: 260, height: 320),
+            slotMachineRawSize: CGSize(width: 1200, height: 1100),
+            slotColumnRawSize: CGSize(width: 155, height: 219),
             columnsConfigs: [
                 SlotMachineElementPositionModel(
-                    widthRaw: 60,
-                    heightRaw: 200,
-                    distanceFromLeftToParent: 20,
-                    distanceFromTopToParent: 80
+                    distanceFromLeftToParent: 292,
+                    distanceFromTopToParent: 466
                 ),
                 SlotMachineElementPositionModel(
-                    widthRaw: 60,
-                    heightRaw: 200,
-                    distanceFromLeftToParent: 90,
-                    distanceFromTopToParent: 80
+                    distanceFromLeftToParent: 521,
+                    distanceFromTopToParent: 466
                 ),
                 SlotMachineElementPositionModel(
-                    widthRaw: 60,
-                    heightRaw: 200,
-                    distanceFromLeftToParent: 170,
-                    distanceFromTopToParent: 80
+                    distanceFromLeftToParent: 750,
+                    distanceFromTopToParent: 466
                 )
             ],
             buttonsConfigs: [

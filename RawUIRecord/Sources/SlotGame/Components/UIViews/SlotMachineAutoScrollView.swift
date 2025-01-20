@@ -15,7 +15,6 @@ class SlotMachineAutoScrollView: UIViewController {
     var configure: SlotMachineCongfigure = .init()
     
     var itemHeight: CGFloat {
-        print("collectionView.frame", collectionView.frame.size)
         return collectionView.frame.height / CGFloat(configure.visibleItemsCount)
     }
     
@@ -126,16 +125,17 @@ extension SlotMachineAutoScrollView {
         let centerIndex = Int(midContentOffset / itemHeight) % models.count
         
         let indexToScroll: Int
+        // If winning mode and have selected index before => choose winningIndex
+        // Else get centerIndex by default
         if winningState.isWinning, let winningIndex = winningState.firstSelectedIndex {
             indexToScroll = winningIndex
         } else {
             indexToScroll = centerIndex
         }
-
-        let isNotWinningAndSameIndex = !winningState.isWinning && indexToScroll == centerIndex
-        let adjustedIndex = isNotWinningAndSameIndex ? centerIndex + 1 : indexToScroll
         
-        print("onScrollStopedAt adjustedIndex", adjustedIndex)
+        // `isNotWinningAndSameIndex` => not winning mode but
+        let isNotWinningAndSameIndex = !winningState.isWinning && indexToScroll == centerIndex
+        let adjustedIndex = isNotWinningAndSameIndex ? (winningState.firstSelectedIndex ?? centerIndex) + Int.random(in: -models.count..<models.count) : indexToScroll
         
         onScrollStopedAt?(adjustedIndex)
         scrollToItem(at: adjustedIndex)
@@ -145,8 +145,6 @@ extension SlotMachineAutoScrollView {
         
         // Calculate the desired content offset for centering the item
         let newOffsetY = CGFloat(index) * itemHeight
-        
-         print("Scrolling to index: \(index), offset: \(newOffsetY) winningState \(winningState)")
         
         self.collectionView.contentOffset.y = newOffsetY
         

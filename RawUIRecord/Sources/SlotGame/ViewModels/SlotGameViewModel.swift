@@ -66,8 +66,6 @@ extension SlotGameViewModel {
     func onScrollStopedAt(_ index: Int?) {
         guard winningState.firstSelectedIndex == nil else { return }
         
-        print("Run to onScrollStopedAt parent: \(index ?? -1)")
-        
         setWinningIndex(index)
         setWinningStateForAllChild(winningState)
     }
