@@ -7,10 +7,10 @@
 
 import UIKit
 
-struct SlotMachineCongfigure {
-    var visibleItemsCount: Int = 3
+struct SlotMachineConfigure {
+    var visibleItemsCount: Int = 1
     // Adjust this for faster scrolling
-    var scrollSpeed: CGFloat = 35.0
+    var scrollSpeed: CGFloat = 30.0
     
     var buffer: Int {
         visibleItemsCount * 2

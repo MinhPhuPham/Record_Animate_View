@@ -64,5 +64,6 @@ struct SlotGameView: View {
             }
         }
         .environment(\.layoutPositionConfig, slotGameConfigure.layoutPositionConfig)
+        .environment(\.gamePlayConfig, slotGameConfigure.gamePlayConfigure)
     }
 }

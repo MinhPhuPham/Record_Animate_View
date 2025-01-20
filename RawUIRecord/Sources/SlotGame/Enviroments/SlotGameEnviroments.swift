@@ -19,9 +19,18 @@ struct GameLayoutPositionConfigValueKey: EnvironmentKey {
     )
 }
 
+struct GamePlayConfigValueKey: EnvironmentKey {
+    public static let defaultValue: GamePlayConfigModel = .init()
+}
+
 public extension EnvironmentValues {
     internal var layoutPositionConfig: GameLayoutPositionConfigModel {
         get { self[GameLayoutPositionConfigValueKey.self] }
         set { self[GameLayoutPositionConfigValueKey.self] = newValue }
+    }
+    
+    internal var gamePlayConfig: GamePlayConfigModel {
+        get { self[GamePlayConfigValueKey.self] }
+        set { self[GamePlayConfigValueKey.self] = newValue }
     }
 }

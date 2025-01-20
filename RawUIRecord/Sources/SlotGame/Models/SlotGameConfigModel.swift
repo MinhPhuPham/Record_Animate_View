@@ -7,6 +7,19 @@
  
 import SwiftUI
 
+struct SlotGameConstanst {
+    static var slotGameSelections: [SlotMachineItemModel] = [
+        SlotMachineItemModel(imageName: "apple"),
+        SlotMachineItemModel(imageName: "bell"),
+        SlotMachineItemModel(imageName: "cherry"),
+        SlotMachineItemModel(imageName: "clover"),
+        SlotMachineItemModel(imageName: "diamond"),
+        SlotMachineItemModel(imageName: "grape"),
+        SlotMachineItemModel(imageName: "lemon")
+    ]
+}
+
+
 struct SlotGameConfigModel {
     var backgroundImage: String = ""
     var headerImage: String = ""
@@ -17,7 +30,8 @@ struct SlotGameConfigModel {
 }
 
 struct GamePlayConfigModel {
-    var slotGameSelections: [SlotMachineItemModel] = Constant.slotGameSelections
+    var slotGameSelections: [SlotMachineItemModel] = SlotGameConstanst.slotGameSelections
+    var slotGameMachineConfig: SlotMachineConfigure = .init()
     
     var delayBetweenStartAll: Double = 0.2
     var delayBetweenStopAll: Double = 0.2

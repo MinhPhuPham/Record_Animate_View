@@ -12,7 +12,7 @@ class SlotMachineAutoScrollView: UIViewController {
     var models: [SlotMachineItemModel]
 
     // Additional variables
-    var configure: SlotMachineCongfigure = .init()
+    var configure: SlotMachineConfigure = .init()
     
     var itemHeight: CGFloat {
         return collectionView.frame.height / CGFloat(configure.visibleItemsCount)
@@ -51,7 +51,7 @@ class SlotMachineAutoScrollView: UIViewController {
     }()
     
     // Custom initializer to set configs
-    init(models: [SlotMachineItemModel], configure: SlotMachineCongfigure) {
+    init(models: [SlotMachineItemModel], configure: SlotMachineConfigure) {
         self.models = models
         self.configure = configure
         
@@ -142,7 +142,6 @@ extension SlotMachineAutoScrollView {
     }
     
     private func scrollToItem(at index: Int) {
-        
         // Calculate the desired content offset for centering the item
         let newOffsetY = CGFloat(index) * itemHeight
         

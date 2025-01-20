@@ -23,6 +23,8 @@ struct SlotGameMachineColumns: View {
 }
 
 private struct SlotGameColumn: View {
+    @Environment(\.gamePlayConfig) var gamePlayConfig
+    
     let index: Int
     var parentSize: CGSize
     let columnConfig: SlotMachineElementPositionModel
@@ -30,10 +32,8 @@ private struct SlotGameColumn: View {
     var body: some View {
         SlotColumnInfiniteUIScrollView(
             index: index,
-            configure: .init(
-                visibleItemsCount: 1,
-                scrollSpeed: 30.0
-            )
+            models: gamePlayConfig.slotGameSelections,
+            configure: gamePlayConfig.slotGameMachineConfig
         )
         .background(Color.white)
         .frameSetting(parentSize: parentSize, elementConfigFrame: columnConfig)
@@ -49,9 +49,9 @@ private struct SlotColumnInfiniteUIScrollView: UIViewControllerRepresentable {
     
     let index: Int
     
-    var models: [SlotMachineItemModel] = Constant.slotGameSelections
+    let models: [SlotMachineItemModel]
     // Additional variables
-    var configure: SlotMachineCongfigure
+    var configure: SlotMachineConfigure
     
     func makeUIViewController(context: Context) -> SlotMachineAutoScrollView {
         let continousInfiniteCollectionView = SlotMachineAutoScrollView(
